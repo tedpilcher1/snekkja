@@ -5,7 +5,6 @@ impl Parser {
     pub fn parse(&self, sentence: &[u8]) -> AisSentence {
         let sentence = sentence.strip_prefix(&[b'!']).unwrap_or(sentence);
         let split_sentence = sentence.split(|char| *char == b'*').collect::<Vec<&[u8]>>();
-
         let sentence = split_sentence[0];
 
         let expected_checksum =
@@ -15,44 +14,64 @@ impl Parser {
             panic!("Invalid checksum")
         }
 
-        let fields = sentence.split(|char| *char == b',').collect::<Vec<&[u8]>>();
+        // bytes 0 & 1 = TalkerId
+        let talker_id = TalkerId::from(&sentence[0..2].try_into().unwrap());
 
-        let (talker_id, report_type) = fields[0].split_at_checked(2).unwrap();
-        let talker_id = TalkerId::from(talker_id);
-        let report_type = ReportType::from(report_type);
+        // bytes 2,3,4 = Ais report type
+        let ais_report_type = AisReportType::from(&sentence[2..5].try_into().unwrap());
 
-        let num_fragments =
-            numeric_from_ascii_char(u8::from_be_bytes([*fields[1].first().unwrap()]));
+        // byte 5 = ','
 
-        let fragment_num =
-            numeric_from_ascii_char(u8::from_be_bytes([*fields[2].first().unwrap()]));
+        // byte 6 = number of fragments
+        let num_fragments = numeric_from_ascii(sentence[6].try_into().unwrap());
 
-        let message_id = match fields[3].is_empty() {
-            true => None,
-            false => Some(1),
+        // byte 7 = ','
+
+        // byte 8 = fragment number
+        let fragment_num = numeric_from_ascii(sentence[8].try_into().unwrap());
+
+        // byte 9 = ','
+
+        let (message_id, radio_channel, _idx_last_byte) = if num_fragments > 1 {
+            // byte 10 = message_id
+            let messsage_id = numeric_from_ascii(sentence[10].try_into().unwrap());
+
+            // byte 11 = ','
+
+            // byte 12 = radio channel
+            let byte_12 = &sentence[12];
+
+            let radio_channel = if *byte_12 == b',' {
+                None
+            } else {
+                Some(RadioChannel::from(byte_12))
+            };
+
+            (Some(messsage_id), radio_channel, 12_usize)
+        } else {
+            // byte 10 = ','
+
+            // byte 11 = radio channel
+            let byte_11 = &sentence[11];
+
+            let radio_channel = if *byte_11 == b',' {
+                None
+            } else {
+                Some(RadioChannel::from(byte_11))
+            };
+
+            (None, radio_channel, 11_usize)
         };
 
-        let channel = match fields[4].is_empty() {
-            true => None,
-            false => Some(RadioChannelCode::from(
-                *fields.get(4).unwrap().first().unwrap(),
-            )),
-        };
-
-        let _data_payload = *fields.get(5).unwrap();
-
-        let fill_bits = &fields[6];
-
-        let fill_bits = numeric_from_ascii_char(*fill_bits.first().unwrap());
-        assert!(fill_bits < 6);
+        let fill_bits = numeric_from_ascii(sentence[sentence.len() - 1].try_into().unwrap());
 
         AisSentence {
             talker_id,
-            report_type,
+            ais_report_type,
             num_fragments,
             fragment_num,
             message_id,
-            channel,
+            radio_channel,
             fill_bits,
         }
     }
@@ -62,15 +81,15 @@ impl Parser {
 /// NMEA AIS sentence
 pub struct AisSentence {
     pub talker_id: TalkerId,
-    pub report_type: ReportType,
+    pub ais_report_type: AisReportType,
     pub num_fragments: u8,
     pub fragment_num: u8,
     pub message_id: Option<u8>,
-    pub channel: Option<RadioChannelCode>,
+    pub radio_channel: Option<RadioChannel>,
     pub fill_bits: u8,
 }
 
-fn numeric_from_ascii_char(char: u8) -> u8 {
+fn numeric_from_ascii(char: u8) -> u8 {
     let mut numeric = char - 48;
 
     if numeric > 40 {
@@ -105,12 +124,10 @@ pub enum TalkerId {
     BS,
     /// NMEA 4.0 Physical Shore AIS station
     SA,
-    /// Unknown talker ID
-    Unknown,
 }
 
-impl From<&[u8]> for TalkerId {
-    fn from(bytes: &[u8]) -> Self {
+impl From<&[u8; 2]> for TalkerId {
+    fn from(bytes: &[u8; 2]) -> Self {
         match bytes {
             b"AB" => Self::AB,
             b"AD" => Self::AD,
@@ -122,47 +139,45 @@ impl From<&[u8]> for TalkerId {
             b"AX" => Self::AX,
             b"BS" => Self::BS,
             b"SA" => Self::SA,
-            _ => Self::Unknown,
+            _ => panic!("Unknown talker id: {:?}", bytes),
         }
     }
 }
 
 #[derive(Debug)]
 /// NMEA sentence type of an AIS message
-pub enum ReportType {
+pub enum AisReportType {
     /// Report from another ship
     VDM,
     /// Report from own ship
     VDO,
-    /// Unknown report type
-    Unknown,
 }
 
-impl From<&[u8]> for ReportType {
-    fn from(bytes: &[u8]) -> Self {
+impl From<&[u8; 3]> for AisReportType {
+    fn from(bytes: &[u8; 3]) -> Self {
         match bytes {
             b"VDM" => Self::VDM,
             b"VDO" => Self::VDO,
-            _ => Self::Unknown,
+            _ => panic!("Unknown report type: {:?}", bytes),
         }
     }
 }
 
 #[derive(Debug)]
-pub enum RadioChannelCode {
+pub enum RadioChannel {
     /// AIS Channel A is 161.975Mhz (87B)
     A,
     /// AIS Channel B is 162.025Mhz (88B)
     B,
 }
 
-impl From<u8> for RadioChannelCode {
-    fn from(byte: u8) -> Self {
+impl From<&u8> for RadioChannel {
+    fn from(byte: &u8) -> Self {
         match byte {
-            b'A' => RadioChannelCode::A,
-            b'1' => RadioChannelCode::A,
-            b'B' => RadioChannelCode::B,
-            b'2' => RadioChannelCode::B,
+            b'A' => RadioChannel::A,
+            b'1' => RadioChannel::A,
+            b'B' => RadioChannel::B,
+            b'2' => RadioChannel::B,
             _ => panic!("Unknown byte detected: {:?}", byte),
         }
     }
