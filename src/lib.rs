@@ -2,10 +2,22 @@
 pub struct Parser;
 
 impl Parser {
-    pub fn parse(&self, packet: &[u8]) -> AisSentence {
-        let fields = packet.split(|char| *char == b',').collect::<Vec<&[u8]>>();
+    pub fn parse(&self, sentence: &[u8]) -> AisSentence {
+        let sentence = sentence.strip_prefix(&[b'!']).unwrap_or(sentence);
+        let split_sentence = sentence.split(|char| *char == b'*').collect::<Vec<&[u8]>>();
 
-        let (talker_id, report_type) = fields[0].split_at_checked(3).unwrap();
+        let sentence = split_sentence[0];
+
+        let expected_checksum =
+            u8::from_str_radix(std::str::from_utf8(&split_sentence[1]).unwrap(), 16).unwrap();
+
+        if !valid_checksum(sentence, expected_checksum) {
+            panic!("Invalid checksum")
+        }
+
+        let fields = sentence.split(|char| *char == b',').collect::<Vec<&[u8]>>();
+
+        let (talker_id, report_type) = fields[0].split_at_checked(2).unwrap();
         let talker_id = TalkerId::from(talker_id);
         let report_type = ReportType::from(report_type);
 
@@ -29,8 +41,9 @@ impl Parser {
 
         let _data_payload = *fields.get(5).unwrap();
 
-        let fill_bits = numeric_from_ascii_char(*fields.get(6).unwrap().first().unwrap());
+        let fill_bits = &fields[6];
 
+        let fill_bits = numeric_from_ascii_char(*fill_bits.first().unwrap());
         assert!(fill_bits < 6);
 
         AisSentence {
@@ -99,16 +112,16 @@ pub enum TalkerId {
 impl From<&[u8]> for TalkerId {
     fn from(bytes: &[u8]) -> Self {
         match bytes {
-            b"!AB" => Self::AB,
-            b"!AD" => Self::AD,
-            b"!AI" => Self::AI,
-            b"!AN" => Self::AN,
-            b"!AR" => Self::AR,
-            b"!AS" => Self::AS,
-            b"!AT" => Self::AT,
-            b"!AX" => Self::AX,
-            b"!BS" => Self::BS,
-            b"!SA" => Self::SA,
+            b"AB" => Self::AB,
+            b"AD" => Self::AD,
+            b"AI" => Self::AI,
+            b"AN" => Self::AN,
+            b"AR" => Self::AR,
+            b"AS" => Self::AS,
+            b"AT" => Self::AT,
+            b"AX" => Self::AX,
+            b"BS" => Self::BS,
+            b"SA" => Self::SA,
             _ => Self::Unknown,
         }
     }
@@ -152,6 +165,15 @@ impl From<u8> for RadioChannelCode {
             b'2' => RadioChannelCode::B,
             _ => panic!("Unknown byte detected: {:?}", byte),
         }
+    }
+}
+
+fn valid_checksum(sentence: &[u8], expected_checksum: u8) -> bool {
+    let received_checksum = sentence.iter().fold(0u8, |acc, &item| acc ^ item);
+    if expected_checksum != received_checksum {
+        false
+    } else {
+        true
     }
 }
 
