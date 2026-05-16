@@ -1,14 +1,14 @@
+use memchr::memchr;
+
 #[derive(Debug, Default)]
 pub struct Parser;
 
 impl Parser {
     pub fn parse(&self, sentence: &[u8]) -> AisSentence {
         let sentence = sentence.strip_prefix(&[b'!']).unwrap_or(sentence);
-        let split_sentence = sentence.split(|char| *char == b'*').collect::<Vec<&[u8]>>();
-        let sentence = split_sentence[0];
-
-        let expected_checksum =
-            u8::from_str_radix(std::str::from_utf8(&split_sentence[1]).unwrap(), 16).unwrap();
+        let star_pos = memchr(b'*', sentence).unwrap();
+        let expected_checksum = parse_hex_byte(sentence[star_pos + 1], sentence[star_pos + 2]);
+        let sentence = &sentence[..star_pos];
 
         if !valid_checksum(sentence, expected_checksum) {
             panic!("Invalid checksum")
@@ -99,6 +99,13 @@ fn numeric_from_ascii(char: u8) -> u8 {
     numeric
 }
 
+fn parse_hex_byte(hi: u8, lo: u8) -> u8 {
+    fn nibble(b: u8) -> u8 {
+        if b >= b'A' { b - b'A' + 10 } else { b - b'0' }
+    }
+    nibble(hi) << 4 | nibble(lo)
+}
+
 /// Talker ID
 ///
 /// Identifies the type of device or station transmitting the data
@@ -185,6 +192,7 @@ impl From<&u8> for RadioChannel {
 
 fn valid_checksum(sentence: &[u8], expected_checksum: u8) -> bool {
     let received_checksum = sentence.iter().fold(0u8, |acc, &item| acc ^ item);
+
     if expected_checksum != received_checksum {
         false
     } else {
