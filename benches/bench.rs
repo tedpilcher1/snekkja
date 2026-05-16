@@ -22,13 +22,12 @@ fn load_samples() -> Vec<String> {
 
 fn parse_lines(parser: &mut Parser, lines: &Vec<Vec<u8>>) {
     for line in lines {
-        let _ = parser.parse(line);
+        let _ = parser.parse(line).unwrap();
     }
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let mut parser = Parser::default();
-
+    let mut parser = Parser;
     let lines = load_samples().into_iter().map(|s| s.into_bytes()).collect();
 
     c.bench_function("snekkja_74156", |b| {
