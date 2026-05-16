@@ -477,7 +477,6 @@ name = "snekkja"
 version = "0.1.0"
 dependencies = [
  "criterion",
- "memchr",
 ]
 
 [[package]]

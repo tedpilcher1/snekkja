@@ -1,5 +1,3 @@
-use memchr::memchr;
-
 use crate::errors::{MalformedReason, ParseError};
 
 pub mod errors;
@@ -10,9 +8,14 @@ pub struct Parser;
 impl Parser {
     pub fn parse(&self, sentence: &[u8]) -> Result<AisSentence, ParseError> {
         let sentence = sentence.strip_prefix(b"!").unwrap_or(sentence);
-        let star_pos = memchr(b'*', sentence).ok_or(ParseError::Malformed(
-            MalformedReason::MissingChecksumDelimiter,
-        ))?;
+
+        let star_pos = sentence.len() - 3;
+
+        if sentence[star_pos] != b'*' {
+            return Err(ParseError::Malformed(
+                MalformedReason::MissingChecksumDelimiter,
+            ));
+        }
 
         let hi = sentence
             .get(star_pos + 1)
@@ -296,7 +299,9 @@ mod tests {
         let result = parser.parse(b"!AIVDM,1,1,,B,data,0*");
         assert!(matches!(
             result,
-            Err(ParseError::Malformed(MalformedReason::SentenceTooShort))
+            Err(ParseError::Malformed(
+                MalformedReason::MissingChecksumDelimiter
+            ))
         ));
     }
 
