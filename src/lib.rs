@@ -9,6 +9,10 @@ impl Parser {
     pub fn parse(&self, sentence: &[u8]) -> Result<AisSentence, ParseError> {
         let sentence = sentence.strip_prefix(b"!").unwrap_or(sentence);
 
+        if sentence.len() < 15 {
+            return Err(ParseError::Malformed(MalformedReason::SentenceTooShort));
+        }
+
         let star_pos = sentence.len() - 3;
 
         if sentence[star_pos] != b'*' {
@@ -33,10 +37,6 @@ impl Parser {
 
         if !valid_checksum(sentence, expected_checksum) {
             return Err(ParseError::InvalidChecksum);
-        }
-
-        if sentence.len() < 12 {
-            return Err(ParseError::Malformed(MalformedReason::SentenceTooShort));
         }
 
         // bytes 0 & 1 = TalkerId
@@ -279,6 +279,22 @@ mod tests {
         assert_eq!(s.fragment_num, 1);
         assert_eq!(s.message_id, Some(3));
         assert!(matches!(s.radio_channel, Some(RadioChannel::B)));
+    }
+
+    #[test]
+    fn error_too_short() {
+        let parser = Parser;
+        for input in [b"".as_ref(), b"*01", b"AIVDM*01"] {
+            let result = parser.parse(input);
+            assert!(
+                matches!(
+                    result,
+                    Err(ParseError::Malformed(MalformedReason::SentenceTooShort))
+                ),
+                "expected SentenceTooShort for input {:?}",
+                input
+            );
+        }
     }
 
     #[test]
