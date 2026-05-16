@@ -89,6 +89,7 @@ pub struct AisSentence {
     pub fill_bits: u8,
 }
 
+#[inline(always)]
 fn numeric_from_ascii(char: u8) -> u8 {
     let mut numeric = char - 48;
 
@@ -99,6 +100,7 @@ fn numeric_from_ascii(char: u8) -> u8 {
     numeric
 }
 
+#[inline(always)]
 fn parse_hex_byte(hi: u8, lo: u8) -> u8 {
     fn nibble(b: u8) -> u8 {
         if b >= b'A' { b - b'A' + 10 } else { b - b'0' }
@@ -134,6 +136,7 @@ pub enum TalkerId {
 }
 
 impl From<&[u8; 2]> for TalkerId {
+    #[inline(always)]
     fn from(bytes: &[u8; 2]) -> Self {
         match bytes {
             b"AB" => Self::AB,
@@ -161,6 +164,7 @@ pub enum AisReportType {
 }
 
 impl From<&[u8; 3]> for AisReportType {
+    #[inline(always)]
     fn from(bytes: &[u8; 3]) -> Self {
         match bytes {
             b"VDM" => Self::VDM,
@@ -179,6 +183,7 @@ pub enum RadioChannel {
 }
 
 impl From<&u8> for RadioChannel {
+    #[inline(always)]
     fn from(byte: &u8) -> Self {
         match byte {
             b'A' => RadioChannel::A,
@@ -190,6 +195,7 @@ impl From<&u8> for RadioChannel {
     }
 }
 
+#[inline(always)]
 fn valid_checksum(sentence: &[u8], expected_checksum: u8) -> bool {
     let received_checksum = sentence.iter().fold(0u8, |acc, &item| acc ^ item);
 
