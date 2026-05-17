@@ -1,5 +1,8 @@
-use crate::messages::{position_report::PositionReport, utils::get_bits_u8};
+use crate::messages::{
+    base_station_report::BaseStationReport, position_report::PositionReport, utils::get_bits_u8,
+};
 
+mod base_station_report;
 mod fields;
 mod position_report;
 mod unarmor;
@@ -12,6 +15,7 @@ type AisMessageType = u8;
 #[derive(Debug)]
 pub enum AisMessage {
     PositionReport(PositionReport),
+    BaseStationReport(BaseStationReport),
 }
 
 impl AisMessage {
@@ -27,6 +31,9 @@ impl AisMessage {
 
         let message = match message_type {
             1..=3 => Some(AisMessage::PositionReport(PositionReport::from(
+                unarmored_buf.as_slice(),
+            ))),
+            4 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
                 unarmored_buf.as_slice(),
             ))),
             _ => None,

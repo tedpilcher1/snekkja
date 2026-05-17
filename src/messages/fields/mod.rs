@@ -1,3 +1,4 @@
+pub mod epfd_fix_type;
 pub mod maneuver_indicator;
 pub mod navigation_status;
 pub mod position_accuracy;
