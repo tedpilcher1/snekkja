@@ -50,37 +50,31 @@ impl Unarmored {
         let bit_count = bytes.len() * 6;
         self.len = bit_count.div_ceil(8);
 
-        let chunks = bytes.len() / 4;
-        let rem = bytes.len() % 4;
+        let iter = bytes.chunks_exact(4);
+        let rem = iter.remainder();
 
-        for k in 0..chunks {
-            let i = k * 4;
-            let j = k * 3;
-            let c0 = decode(bytes[i]);
-            let c1 = decode(bytes[i + 1]);
-            let c2 = decode(bytes[i + 2]);
-            let c3 = decode(bytes[i + 3]);
-            self.buf[j] = (c0 << 2) | (c1 >> 4);
-            self.buf[j + 1] = (c1 << 4) | (c2 >> 2);
-            self.buf[j + 2] = (c2 << 6) | c3;
+        for (inc, outc) in iter.zip(self.buf.chunks_exact_mut(3)) {
+            let c0 = decode(inc[0]);
+            let c1 = decode(inc[1]);
+            let c2 = decode(inc[2]);
+            let c3 = decode(inc[3]);
+            outc[0] = (c0 << 2) | (c1 >> 4);
+            outc[1] = (c1 << 4) | (c2 >> 2);
+            outc[2] = (c2 << 6) | c3;
         }
 
-        let bi = chunks * 4;
-        let bj = chunks * 3;
+        let bj = (bytes.len() / 4) * 3;
         match rem {
-            1 => {
-                self.buf[bj] = decode(bytes[bi]) << 2;
+            [c0] => {
+                self.buf[bj] = decode(*c0) << 2;
             }
-            2 => {
-                let c0 = decode(bytes[bi]);
-                let c1 = decode(bytes[bi + 1]);
+            [c0, c1] => {
+                let (c0, c1) = (decode(*c0), decode(*c1));
                 self.buf[bj] = (c0 << 2) | (c1 >> 4);
                 self.buf[bj + 1] = c1 << 4;
             }
-            3 => {
-                let c0 = decode(bytes[bi]);
-                let c1 = decode(bytes[bi + 1]);
-                let c2 = decode(bytes[bi + 2]);
+            [c0, c1, c2] => {
+                let (c0, c1, c2) = (decode(*c0), decode(*c1), decode(*c2));
                 self.buf[bj] = (c0 << 2) | (c1 >> 4);
                 self.buf[bj + 1] = (c1 << 4) | (c2 >> 2);
                 self.buf[bj + 2] = c2 << 6;
