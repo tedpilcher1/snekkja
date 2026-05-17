@@ -1,6 +1,10 @@
-use crate::errors::{MalformedReason, ParseError};
+use crate::{
+    errors::{MalformedReason, ParseError},
+    messages::AisMessage,
+};
 
 pub mod errors;
+pub mod messages;
 
 #[derive(Debug)]
 pub struct Parser;
@@ -57,7 +61,7 @@ impl Parser {
         // byte 8 = fragment number
         let fragment_num = numeric_from_ascii(sentence[8]);
 
-        let (message_id, radio_channel) = if num_fragments > 1 {
+        let (message_id, radio_channel, start_ais_message) = if num_fragments > 1 {
             if sentence.len() < 13 {
                 return Err(ParseError::Malformed(MalformedReason::SentenceTooShort));
             }
@@ -72,16 +76,16 @@ impl Parser {
                 Some(RadioChannel::from(sentence[12]))
             };
 
-            (Some(message_id), radio_channel)
+            (Some(message_id), radio_channel, 14)
         } else {
             // byte 11 = radio channel
-            let radio_channel = if sentence[11] == b',' {
-                None
+            let (radio_channel, start_ais_message) = if sentence[11] == b',' {
+                (None, 12)
             } else {
-                Some(RadioChannel::from(sentence[11]))
+                (Some(RadioChannel::from(sentence[11])), 13)
             };
 
-            (None, radio_channel)
+            (None, radio_channel, start_ais_message)
         };
 
         let fill_bits = sentence
@@ -89,6 +93,11 @@ impl Parser {
             .copied()
             .map(numeric_from_ascii)
             .ok_or(ParseError::Malformed(MalformedReason::SentenceTooShort))?;
+
+        let (message_type, message) = AisMessage::parse(
+            &sentence[start_ais_message..sentence.len() - 2],
+            usize::from(fill_bits),
+        );
 
         Ok(AisSentence {
             talker_id,
@@ -98,6 +107,8 @@ impl Parser {
             message_id,
             radio_channel,
             fill_bits,
+            message_type,
+            message,
         })
     }
 }
@@ -111,6 +122,8 @@ pub struct AisSentence {
     pub message_id: Option<u8>,
     pub radio_channel: Option<RadioChannel>,
     pub fill_bits: u8,
+    pub message_type: u8,
+    pub message: Option<AisMessage>,
 }
 
 #[inline(always)]
@@ -249,7 +262,7 @@ mod tests {
     #[test]
     fn parses_single_fragment() {
         let parser = Parser;
-        let packet = b"!AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*01";
+        let packet = b"!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C";
         let s = parser.parse(packet).unwrap();
 
         assert!(matches!(s.talker_id, TalkerId::AI));
@@ -272,7 +285,7 @@ mod tests {
     #[test]
     fn parses_multi_fragment() {
         let parser = Parser;
-        let packet = make_packet(b"AIVDM,2,1,3,B,payload,0");
+        let packet = make_packet(b"AIVDM,2,1,3,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
 
         assert_eq!(s.num_fragments, 2);
@@ -353,7 +366,7 @@ mod tests {
     #[test]
     fn unknown_talker_id_produces_variant() {
         let parser = Parser;
-        let packet = make_packet(b"XXVDM,1,1,,B,payload,0");
+        let packet = make_packet(b"XXVDM,1,1,,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.talker_id, TalkerId::Unknown));
     }
@@ -361,7 +374,7 @@ mod tests {
     #[test]
     fn unknown_report_type_produces_variant() {
         let parser = Parser;
-        let packet = make_packet(b"AIZAP,1,1,,B,payload,0");
+        let packet = make_packet(b"AIZAP,1,1,,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.ais_report_type, AisReportType::Unknown));
     }
@@ -369,7 +382,7 @@ mod tests {
     #[test]
     fn unknown_radio_channel_produces_variant() {
         let parser = Parser;
-        let packet = make_packet(b"AIVDM,1,1,,Z,payload,0");
+        let packet = make_packet(b"AIVDM,1,1,,Z,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.radio_channel, Some(RadioChannel::Unknown)));
     }
