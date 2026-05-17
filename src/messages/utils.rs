@@ -4,7 +4,7 @@ use std::ops::RangeInclusive;
 fn get_bits(bytes: &[u8], start: usize, len: usize) -> u64 {
     let byte_start = start / 8;
     let bit_offset = start % 8;
-    let bytes_needed = (bit_offset + len + 7) / 8;
+    let bytes_needed = (bit_offset + len).div_ceil(8);
 
     let mut val = 0u64;
     for i in 0..bytes_needed {
@@ -22,11 +22,7 @@ pub fn get_bit(bytes: &[u8], i: usize) -> bool {
 
 #[inline(always)]
 pub fn get_bits_u8(bytes: &[u8], range: RangeInclusive<usize>) -> u8 {
-    get_bits(
-        bytes.into(),
-        *range.start(),
-        range.end() - range.start() + 1,
-    ) as u8
+    get_bits(bytes, *range.start(), range.end() - range.start() + 1) as u8
 }
 
 #[inline(always)]

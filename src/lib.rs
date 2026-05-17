@@ -1,16 +1,18 @@
 use crate::{
     errors::{MalformedReason, ParseError},
-    messages::AisMessage,
+    messages::{AisMessage, Unarmored},
 };
 
 pub mod errors;
 pub mod messages;
 
-#[derive(Debug)]
-pub struct Parser;
+#[derive(Debug, Default)]
+pub struct Parser {
+    unarmored_buf: Unarmored,
+}
 
 impl Parser {
-    pub fn parse(&self, sentence: &[u8]) -> Result<AisSentence, ParseError> {
+    pub fn parse(&mut self, sentence: &[u8]) -> Result<AisSentence, ParseError> {
         let sentence = sentence.strip_prefix(b"!").unwrap_or(sentence);
 
         if sentence.len() < 15 {
@@ -95,6 +97,7 @@ impl Parser {
             .ok_or(ParseError::Malformed(MalformedReason::SentenceTooShort))?;
 
         let (message_type, message) = AisMessage::parse(
+            &mut self.unarmored_buf,
             &sentence[start_ais_message..sentence.len() - 2],
             usize::from(fill_bits),
         );
@@ -261,7 +264,7 @@ mod tests {
 
     #[test]
     fn parses_single_fragment() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = b"!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C";
         let s = parser.parse(packet).unwrap();
 
@@ -276,7 +279,7 @@ mod tests {
 
     #[test]
     fn parses_without_leading_bang() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let result =
             parser.parse(b"AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*01");
         assert!(result.is_ok());
@@ -284,7 +287,7 @@ mod tests {
 
     #[test]
     fn parses_multi_fragment() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = make_packet(b"AIVDM,2,1,3,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
 
@@ -296,7 +299,7 @@ mod tests {
 
     #[test]
     fn error_too_short() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         for input in [b"".as_ref(), b"*01", b"AIVDM*01"] {
             let result = parser.parse(input);
             assert!(
@@ -312,7 +315,7 @@ mod tests {
 
     #[test]
     fn error_missing_checksum_delimiter() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let result = parser.parse(b"!AIVDM,1,1,,B,data,0");
         assert!(matches!(
             result,
@@ -324,7 +327,7 @@ mod tests {
 
     #[test]
     fn error_truncated_checksum() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let result = parser.parse(b"!AIVDM,1,1,,B,data,0*");
         assert!(matches!(
             result,
@@ -336,7 +339,7 @@ mod tests {
 
     #[test]
     fn error_invalid_hex_digit() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let result = parser.parse(b"!AIVDM,1,1,,B,data,0*GG");
         assert!(matches!(
             result,
@@ -346,7 +349,7 @@ mod tests {
 
     #[test]
     fn error_checksum_mismatch() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let result =
             parser.parse(b"!AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*FF");
         assert!(matches!(result, Err(ParseError::InvalidChecksum)));
@@ -354,7 +357,7 @@ mod tests {
 
     #[test]
     fn error_sentence_too_short() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = make_packet(b"AIVDM,1,1,");
         let result = parser.parse(&packet);
         assert!(matches!(
@@ -365,7 +368,7 @@ mod tests {
 
     #[test]
     fn unknown_talker_id_produces_variant() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = make_packet(b"XXVDM,1,1,,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.talker_id, TalkerId::Unknown));
@@ -373,7 +376,7 @@ mod tests {
 
     #[test]
     fn unknown_report_type_produces_variant() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = make_packet(b"AIZAP,1,1,,B,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.ais_report_type, AisReportType::Unknown));
@@ -381,7 +384,7 @@ mod tests {
 
     #[test]
     fn unknown_radio_channel_produces_variant() {
-        let parser = Parser;
+        let mut parser = Parser::default();
         let packet = make_packet(b"AIVDM,1,1,,Z,0000000,0");
         let s = parser.parse(&packet).unwrap();
         assert!(matches!(s.radio_channel, Some(RadioChannel::Unknown)));

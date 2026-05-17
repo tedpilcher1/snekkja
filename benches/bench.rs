@@ -27,7 +27,7 @@ fn parse_lines(parser: &mut Parser, lines: &Vec<Vec<u8>>) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let mut parser = Parser;
+    let mut parser = Parser::default();
     let lines = load_samples().into_iter().map(|s| s.into_bytes()).collect();
 
     c.bench_function("snekkja_74156", |b| {
