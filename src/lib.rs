@@ -162,7 +162,20 @@ fn parse_hex_byte(hi: u8, lo: u8) -> Result<u8, ParseError> {
 
 #[inline(always)]
 fn valid_checksum(sentence: &[u8], expected_checksum: u8) -> bool {
-    sentence.iter().fold(0u8, |acc, &item| acc ^ item) == expected_checksum
+    let iter = sentence.chunks_exact(8);
+    let rem = iter.remainder();
+
+    let mut acc = 0u64;
+    for chunk in iter {
+        acc ^= u64::from_ne_bytes(chunk.try_into().unwrap());
+    }
+
+    // Fold 8 bytes down to 1
+    acc ^= acc >> 32;
+    acc ^= acc >> 16;
+    acc ^= acc >> 8;
+
+    rem.iter().fold(acc as u8, |a, &b| a ^ b) == expected_checksum
 }
 
 #[cfg(test)]
