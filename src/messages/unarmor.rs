@@ -35,7 +35,10 @@ impl Unarmored {
 
     #[inline(always)]
     pub fn as_slice(&self) -> &[u8] {
-        &self.buf[..self.len]
+        // Safety: self.len is always set to bit_count.div_ceil(8) where
+        // bit_count = bytes.len() * 6. AIS payloads fit well within the
+        // 256-byte buf, so self.len <= buf.len() is always satisfied.
+        unsafe { self.buf.get_unchecked(..self.len) }
     }
 
     #[inline(always)]
