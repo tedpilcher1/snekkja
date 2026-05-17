@@ -5,6 +5,9 @@ use crate::{
 
 pub mod errors;
 pub mod messages;
+mod types;
+
+pub use types::{AisReportType, RadioChannel, TalkerId};
 
 #[derive(Debug, Default)]
 pub struct Parser {
@@ -155,94 +158,6 @@ fn parse_hex_byte(hi: u8, lo: u8) -> Result<u8, ParseError> {
     let lo = nibble(lo).ok_or(ParseError::Malformed(MalformedReason::InvalidHexDigit))?;
 
     Ok(hi << 4 | lo)
-}
-
-/// Talker ID
-///
-/// Identifies the type of device or station transmitting the data
-#[derive(Debug)]
-pub enum TalkerId {
-    /// NMEA 4.0 Base AIS station
-    AB,
-    /// NMEA 4.0 Dependent AIS Base station
-    AD,
-    /// Mobile AIS station
-    AI,
-    /// NMEA 4.0 Aid to Navigation AIS station
-    AN,
-    /// NMEA 4.0 AIS Receiving station
-    AR,
-    /// NMEA 4.0 Limited Base station
-    AS,
-    /// NMEA 4.0 AIS Transmitting station
-    AT,
-    /// NMEA 4.0 Repeater AIS station
-    AX,
-    /// Base AIS station (deprecated)
-    BS,
-    /// NMEA 4.0 Physical Shore AIS station
-    SA,
-    Unknown,
-}
-
-impl From<&[u8; 2]> for TalkerId {
-    #[inline(always)]
-    fn from(bytes: &[u8; 2]) -> Self {
-        match bytes {
-            b"AB" => Self::AB,
-            b"AD" => Self::AD,
-            b"AI" => Self::AI,
-            b"AN" => Self::AN,
-            b"AR" => Self::AR,
-            b"AS" => Self::AS,
-            b"AT" => Self::AT,
-            b"AX" => Self::AX,
-            b"BS" => Self::BS,
-            b"SA" => Self::SA,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-/// NMEA sentence type of an AIS message
-#[derive(Debug)]
-pub enum AisReportType {
-    /// Report from another ship
-    VDM,
-    /// Report from own ship
-    VDO,
-    Unknown,
-}
-
-impl From<&[u8; 3]> for AisReportType {
-    #[inline(always)]
-    fn from(bytes: &[u8; 3]) -> Self {
-        match bytes {
-            b"VDM" => Self::VDM,
-            b"VDO" => Self::VDO,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum RadioChannel {
-    /// AIS Channel A is 161.975Mhz (87B)
-    A,
-    /// AIS Channel B is 162.025Mhz (88B)
-    B,
-    Unknown,
-}
-
-impl From<u8> for RadioChannel {
-    #[inline(always)]
-    fn from(byte: u8) -> Self {
-        match byte {
-            b'A' | b'1' => RadioChannel::A,
-            b'B' | b'2' => RadioChannel::B,
-            _ => RadioChannel::Unknown,
-        }
-    }
 }
 
 #[inline(always)]

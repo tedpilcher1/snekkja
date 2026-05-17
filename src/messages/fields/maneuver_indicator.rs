@@ -1,4 +1,13 @@
-#[derive(Debug)]
+static TABLE: [Option<ManeuverIndicator>; 256] = {
+    let mut t = [Some(ManeuverIndicator::Unknown); 256];
+    t[0 as usize] = None;
+    t[1 as usize] = Some(ManeuverIndicator::NoSpecialManeuver);
+    t[2 as usize] = Some(ManeuverIndicator::SpecialManeuver);
+
+    t
+};
+
+#[derive(Debug, Clone, Copy)]
 pub enum ManeuverIndicator {
     /// 1
     NoSpecialManeuver,
@@ -8,17 +17,13 @@ pub enum ManeuverIndicator {
     /// 2
     SpecialManeuver,
 
-    Unknown(u8),
+    Unknown,
 }
 
 impl ManeuverIndicator {
     #[inline(always)]
     pub fn parse(crumb: u8) -> Option<Self> {
-        match crumb {
-            0 => None,
-            1 => Some(Self::NoSpecialManeuver),
-            2 => Some(Self::SpecialManeuver),
-            _ => Some(Self::Unknown(crumb)),
-        }
+        // Safety: Table has size of 256
+        unsafe { *TABLE.get_unchecked(crumb as usize) }
     }
 }

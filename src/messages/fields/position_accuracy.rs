@@ -1,4 +1,6 @@
-#[derive(Debug)]
+static TABLE: [PositionAccuracy; 2] = [PositionAccuracy::UnaugmentedGnss, PositionAccuracy::Dgps];
+
+#[derive(Debug, Clone, Copy)]
 pub enum PositionAccuracy {
     /// DGPS-quality fix with an accuracy of < 10ms
     ///
@@ -13,10 +15,7 @@ pub enum PositionAccuracy {
 impl From<u8> for PositionAccuracy {
     #[inline(always)]
     fn from(bit: u8) -> Self {
-        match bit {
-            0 => Self::UnaugmentedGnss,
-            1 => Self::Dgps,
-            _ => unreachable!(),
-        }
+        // Saftey: single masked bit passed
+        unsafe { *TABLE.get_unchecked(bit as usize) }
     }
 }
