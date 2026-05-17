@@ -37,3 +37,11 @@ pub fn parse_true_heading(data: u16) -> Option<u16> {
         _ => Some(data),
     }
 }
+
+#[inline(always)]
+pub fn parse_draught(data: u8) -> Option<f32> {
+    match data {
+        0 => None,
+        d => Some(d as f32 / 10.0),
+    }
+}

@@ -1,5 +1,19 @@
 use std::ops::RangeInclusive;
 
+pub fn decode_text(bytes: &[u8], start: usize, num_chars: usize) -> String {
+    let mut s = String::with_capacity(num_chars);
+    for i in 0..num_chars {
+        let val = get_bits_dyn(bytes, start + i * 6, 6) as u8;
+        s.push(if val < 32 {
+            (val + 64) as char
+        } else {
+            val as char
+        });
+    }
+    s.truncate(s.trim_end_matches(['@', ' ']).len());
+    s
+}
+
 #[inline(always)]
 fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
     let byte_start = const { START / 8 };

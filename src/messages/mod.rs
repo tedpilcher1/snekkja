@@ -1,10 +1,12 @@
 use crate::messages::{
-    base_station_report::BaseStationReport, position_report::PositionReport, utils::get_bits_u8,
+    base_station_report::BaseStationReport, position_report::PositionReport,
+    static_voyage_data::StaticVoyageData, utils::get_bits_u8,
 };
 
 mod base_station_report;
 mod fields;
 mod position_report;
+mod static_voyage_data;
 mod unarmor;
 mod utils;
 
@@ -16,6 +18,7 @@ type AisMessageType = u8;
 pub enum AisMessage {
     PositionReport(PositionReport),
     BaseStationReport(BaseStationReport),
+    StaticVoyageData(StaticVoyageData),
 }
 
 impl AisMessage {
@@ -34,6 +37,9 @@ impl AisMessage {
                 unarmored_buf.as_slice(),
             ))),
             4 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
+                unarmored_buf.as_slice(),
+            ))),
+            5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(
                 unarmored_buf.as_slice(),
             ))),
             _ => None,
