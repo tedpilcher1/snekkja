@@ -1,8 +1,8 @@
 static TABLE: [Option<ManeuverIndicator>; 256] = {
     let mut t = [Some(ManeuverIndicator::Unknown); 256];
-    t[0 as usize] = None;
-    t[1 as usize] = Some(ManeuverIndicator::NoSpecialManeuver);
-    t[2 as usize] = Some(ManeuverIndicator::SpecialManeuver);
+    t[0_usize] = None;
+    t[1_usize] = Some(ManeuverIndicator::NoSpecialManeuver);
+    t[2_usize] = Some(ManeuverIndicator::SpecialManeuver);
 
     t
 };

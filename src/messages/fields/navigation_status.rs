@@ -1,21 +1,21 @@
 static TABLE: [Option<NavigationStatus>; 256] = {
     let mut t = [Some(NavigationStatus::Unknown); 256];
-    t[0 as usize] = Some(NavigationStatus::UnderWayUsingEngine);
-    t[1 as usize] = Some(NavigationStatus::AtAnchor);
-    t[2 as usize] = Some(NavigationStatus::NotUnderCommand);
-    t[3 as usize] = Some(NavigationStatus::RestrictedManouverability);
-    t[4 as usize] = Some(NavigationStatus::ConstrainedByDraught);
-    t[5 as usize] = Some(NavigationStatus::Moored);
-    t[6 as usize] = Some(NavigationStatus::Aground);
-    t[7 as usize] = Some(NavigationStatus::EngagedInFishing);
-    t[8 as usize] = Some(NavigationStatus::UnderWaySailing);
-    t[9 as usize] = Some(NavigationStatus::ReservedForFutureAmendmentOfNavigationalStatusForHSC);
-    t[10 as usize] = Some(NavigationStatus::ReservedForFutureAmendmentOfNavigationalStatusForWIG);
-    t[11 as usize] = Some(NavigationStatus::PowerDrivenVesselTowingAstern);
-    t[12 as usize] = Some(NavigationStatus::PowerDrivenVesselPushingAheadOrTowingAlongside);
-    t[13 as usize] = Some(NavigationStatus::ReservedForFutureUse);
-    t[14 as usize] = Some(NavigationStatus::AisSartIsActive);
-    t[15 as usize] = None;
+    t[0_usize] = Some(NavigationStatus::UnderWayUsingEngine);
+    t[1_usize] = Some(NavigationStatus::AtAnchor);
+    t[2_usize] = Some(NavigationStatus::NotUnderCommand);
+    t[3_usize] = Some(NavigationStatus::RestrictedManouverability);
+    t[4_usize] = Some(NavigationStatus::ConstrainedByDraught);
+    t[5_usize] = Some(NavigationStatus::Moored);
+    t[6_usize] = Some(NavigationStatus::Aground);
+    t[7_usize] = Some(NavigationStatus::EngagedInFishing);
+    t[8_usize] = Some(NavigationStatus::UnderWaySailing);
+    t[9_usize] = Some(NavigationStatus::ReservedForFutureAmendmentOfNavigationalStatusForHSC);
+    t[10_usize] = Some(NavigationStatus::ReservedForFutureAmendmentOfNavigationalStatusForWIG);
+    t[11_usize] = Some(NavigationStatus::PowerDrivenVesselTowingAstern);
+    t[12_usize] = Some(NavigationStatus::PowerDrivenVesselPushingAheadOrTowingAlongside);
+    t[13_usize] = Some(NavigationStatus::ReservedForFutureUse);
+    t[14_usize] = Some(NavigationStatus::AisSartIsActive);
+    t[15_usize] = None;
     t
 };
 
