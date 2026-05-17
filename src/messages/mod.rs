@@ -23,7 +23,7 @@ impl AisMessage {
         fill_bits: usize,
     ) -> (AisMessageType, Option<Self>) {
         unarmored_buf.unarmor(bytes, fill_bits);
-        let message_type = AisMessageType::from(get_bits_u8(unarmored_buf.as_slice(), 0..=5));
+        let message_type = AisMessageType::from(get_bits_u8::<0, 6>(unarmored_buf.as_slice()));
 
         let message = match message_type {
             1..=3 => Some(AisMessage::PositionReport(PositionReport::from(
