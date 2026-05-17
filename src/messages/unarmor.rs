@@ -45,7 +45,8 @@ impl Unarmored {
     pub fn unarmor(&mut self, bytes: &[u8], fill_bits: usize) {
         #[inline(always)]
         fn decode(byte: u8) -> u8 {
-            let v = DECODE[byte as usize];
+            // Safety: table is size 256
+            let v = unsafe { *DECODE.get_unchecked(byte as usize) };
             debug_assert!(v != 0xFF, "Armored byte out of range: {byte}");
             v
         }
@@ -53,10 +54,31 @@ impl Unarmored {
         let bit_count = bytes.len() * 6;
         self.len = bit_count.div_ceil(8);
 
-        let iter = bytes.chunks_exact(4);
-        let rem = iter.remainder();
+        let iter8 = bytes.chunks_exact(8);
+        let rem = iter8.remainder();
 
-        for (inc, outc) in iter.zip(self.buf.chunks_exact_mut(3)) {
+        for (inc, outc) in iter8.zip(self.buf.chunks_exact_mut(6)) {
+            let c0 = decode(inc[0]);
+            let c1 = decode(inc[1]);
+            let c2 = decode(inc[2]);
+            let c3 = decode(inc[3]);
+            let c4 = decode(inc[4]);
+            let c5 = decode(inc[5]);
+            let c6 = decode(inc[6]);
+            let c7 = decode(inc[7]);
+            outc[0] = (c0 << 2) | (c1 >> 4);
+            outc[1] = (c1 << 4) | (c2 >> 2);
+            outc[2] = (c2 << 6) | c3;
+            outc[3] = (c4 << 2) | (c5 >> 4);
+            outc[4] = (c5 << 4) | (c6 >> 2);
+            outc[5] = (c6 << 6) | c7;
+        }
+
+        let bj_4 = (bytes.len() / 8) * 6;
+        let iter4 = rem.chunks_exact(4);
+        let rem4 = iter4.remainder();
+
+        for (inc, outc) in iter4.zip(self.buf[bj_4..].chunks_exact_mut(3)) {
             let c0 = decode(inc[0]);
             let c1 = decode(inc[1]);
             let c2 = decode(inc[2]);
@@ -67,7 +89,7 @@ impl Unarmored {
         }
 
         let bj = (bytes.len() / 4) * 3;
-        match rem {
+        match rem4 {
             [c0] => {
                 self.buf[bj] = decode(*c0) << 2;
             }
@@ -90,9 +112,12 @@ impl Unarmored {
                 0 => 8,
                 n => n,
             };
+
             let final_idx = self.len - 1;
             let shift = (8 - bits_in_final_byte) + fill_bits.min(bits_in_final_byte);
+
             self.buf[final_idx] &= if shift >= 8 { 0x00 } else { 0xFFu8 << shift };
+
             if fill_bits > bits_in_final_byte {
                 self.buf[final_idx - 1] &= 0xFFu8 << (fill_bits - bits_in_final_byte);
             }
