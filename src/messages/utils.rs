@@ -1,17 +1,45 @@
-use std::ops::RangeInclusive;
+use std::{fmt, ops::RangeInclusive};
 
-pub fn decode_text(bytes: &[u8], start: usize, num_chars: usize) -> String {
-    let mut s = String::with_capacity(num_chars);
+#[derive(Clone, Copy)]
+pub struct AisStr<const N: usize> {
+    buf: [u8; N],
+    len: u8,
+}
+
+impl<const N: usize> AisStr<N> {
+    pub fn as_str(&self) -> &str {
+        // Safety: buf contains only printable ASCII from the 6-bit AIS character set
+        unsafe { std::str::from_utf8_unchecked(&self.buf[..self.len as usize]) }
+    }
+}
+
+impl<const N: usize> fmt::Debug for AisStr<N> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+pub fn decode_text_fixed<const N: usize>(
+    bytes: &[u8],
+    start: usize,
+    num_chars: usize,
+) -> AisStr<N> {
+    let mut buf = [0u8; N];
+    let mut trimmed_len = 0usize;
+
     for i in 0..num_chars {
         let val = get_bits_dyn(bytes, start + i * 6, 6) as u8;
-        s.push(if val < 32 {
-            (val + 64) as char
-        } else {
-            val as char
-        });
+        let ch = if val < 32 { val + 64 } else { val };
+        buf[i] = ch;
+        if ch != b'@' && ch != b' ' {
+            trimmed_len = i + 1;
+        }
     }
-    s.truncate(s.trim_end_matches(['@', ' ']).len());
-    s
+
+    AisStr {
+        buf,
+        len: trimmed_len as u8,
+    }
 }
 
 #[inline(always)]

@@ -11,6 +11,15 @@ opt-level = 3
 lto = "fat"
 codegen-units = 1
 
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false
+opt-level = 3
+codegen-units = 1
+debug-assertions = false
+split-debuginfo = "off"
+
 [[bench]]
 name = "bench"
 harness = false
