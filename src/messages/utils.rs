@@ -85,6 +85,12 @@ pub fn get_bits_u32<const START: usize, const LEN: usize>(bytes: &[u8]) -> u32 {
 }
 
 #[inline(always)]
+pub fn get_bits_i32<const START: usize, const LEN: usize>(bytes: &[u8]) -> i32 {
+    let shift = 32 - LEN;
+    (get_bits::<START, LEN>(bytes) as i32) << shift >> shift
+}
+
+#[inline(always)]
 pub fn get_bit_dyn(bytes: &[u8], i: usize) -> bool {
     get_bits_dyn(bytes, i, 1) != 0
 }

@@ -5,7 +5,7 @@ use crate::messages::{
         primitives::{parse_latitude, parse_longitude},
         radio_status::RadioStatus,
     },
-    utils::{get_bit, get_bits_u8, get_bits_u16, get_bits_u32},
+    utils::{get_bit, get_bits_i32, get_bits_u8, get_bits_u16, get_bits_u32},
 };
 
 #[derive(Debug)]
@@ -57,8 +57,8 @@ impl From<&[u8]> for BaseStationReport {
             s => Some(s),
         };
         let position_accuracy = PositionAccuracy::from(get_bits_u8::<78, 1>(bytes));
-        let longitude = parse_longitude(get_bits_u32::<79, 28>(bytes) as i32);
-        let latitude = parse_latitude(get_bits_u32::<107, 27>(bytes) as i32);
+        let longitude = parse_longitude(get_bits_i32::<79, 28>(bytes));
+        let latitude = parse_latitude(get_bits_i32::<107, 27>(bytes));
         let epfd = EpfdFixType::from(get_bits_u8::<134, 4>(bytes));
         let raim = get_bit::<148>(bytes);
         let radio_status = RadioStatus::parse(bytes, 149, message_type);

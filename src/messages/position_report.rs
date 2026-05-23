@@ -7,7 +7,7 @@ use crate::messages::{
         radio_status::RadioStatus,
         rate_of_turn::RateOfTurn,
     },
-    utils::{get_bit, get_bits_u8, get_bits_u16, get_bits_u32},
+    utils::{get_bit, get_bits_i32, get_bits_u8, get_bits_u16, get_bits_u32},
 };
 
 #[derive(Debug)]
@@ -38,8 +38,8 @@ impl From<&[u8]> for PositionReport {
         let rate_of_turn = RateOfTurn::parse(get_bits_u8::<42, 8>(bytes) as i8);
         let speed_over_ground = parse_sog(get_bits_u16::<50, 10>(bytes));
         let position_accuracy = PositionAccuracy::from(get_bits_u8::<60, 1>(bytes));
-        let longitude = parse_longitude(get_bits_u32::<61, 28>(bytes) as i32);
-        let latitude = parse_latitude(get_bits_u32::<89, 27>(bytes) as i32);
+        let longitude = parse_longitude(get_bits_i32::<61, 28>(bytes));
+        let latitude = parse_latitude(get_bits_i32::<89, 27>(bytes));
         let course_over_ground = parse_cog(get_bits_u16::<116, 12>(bytes));
         let true_heading = parse_true_heading(get_bits_u16::<128, 9>(bytes));
         let timestamp = get_bits_u8::<137, 6>(bytes);
