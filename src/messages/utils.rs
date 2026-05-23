@@ -27,10 +27,10 @@ pub fn decode_text_fixed<const N: usize>(
     let mut buf = [0u8; N];
     let mut trimmed_len = 0usize;
 
-    for i in 0..num_chars {
+    for (i, slot) in buf.iter_mut().enumerate().take(num_chars) {
         let val = get_bits_dyn(bytes, start + i * 6, 6) as u8;
         let ch = if val < 32 { val + 64 } else { val };
-        buf[i] = ch;
+        *slot = ch;
         if ch != b'@' && ch != b' ' {
             trimmed_len = i + 1;
         }

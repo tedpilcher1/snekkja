@@ -115,6 +115,7 @@ impl Unarmored {
 }
 
 #[inline(always)]
+#[allow(clippy::too_many_arguments)]
 unsafe fn decode_pack(
     chunk: uint8x16_t,
     v48: uint8x16_t,

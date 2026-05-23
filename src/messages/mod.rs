@@ -3,14 +3,14 @@ use crate::messages::{
     static_voyage_data::StaticVoyageData, utils::get_bits_u8,
 };
 
-mod base_station_report;
+pub mod base_station_report;
 mod fields;
-mod position_report;
-mod static_voyage_data;
+pub mod position_report;
+pub mod static_voyage_data;
 mod unarmor;
 mod utils;
 
-pub use unarmor::Unarmored;
+pub(crate) use unarmor::Unarmored;
 
 type AisMessageType = u8;
 
@@ -22,9 +22,8 @@ pub enum AisMessage {
 }
 
 impl AisMessage {
-    // returns option temporarily
     #[inline(always)]
-    pub fn parse(
+    pub(crate) fn parse(
         unarmored_buf: &mut Unarmored,
         bytes: &[u8],
         fill_bits: usize,
