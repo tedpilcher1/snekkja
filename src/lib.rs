@@ -1,13 +1,32 @@
 use crate::{
+    checksum::valid_checksum,
     errors::{MalformedReason, ParseError},
     messages::{AisMessage, Unarmored},
 };
 
+pub(crate) mod checksum;
 pub mod errors;
 pub mod messages;
 mod types;
 
 pub use types::{AisReportType, RadioChannel, TalkerId};
+
+// TAIL_EXTRACT[k][j] selects from the last 16 bytes of the input such that:
+//   result[j] = input[i + j]  for j < k (the k tail chars, right-aligned in last16)
+//   result[j] = fallback      for j >= k (index 255 is out-of-range for vqtbx1q_u8)
+const TAIL_EXTRACT: [[u8; 16]; 16] = {
+    let mut t = [[255u8; 16]; 16];
+    let mut k = 1usize;
+    while k < 16 {
+        let mut j = 0usize;
+        while j < k {
+            t[k][j] = (16 - k + j) as u8;
+            j += 1;
+        }
+        k += 1;
+    }
+    t
+};
 
 #[derive(Debug, Default)]
 pub struct Parser {
@@ -44,7 +63,7 @@ impl Parser {
 
         let sentence = &sentence[..star_pos];
 
-        if !valid_checksum(sentence, expected_checksum) {
+        if !unsafe { valid_checksum(sentence, expected_checksum) } {
             return Err(ParseError::InvalidChecksum);
         }
 
@@ -158,24 +177,6 @@ fn parse_hex_byte(hi: u8, lo: u8) -> Result<u8, ParseError> {
     let lo = nibble(lo).ok_or(ParseError::Malformed(MalformedReason::InvalidHexDigit))?;
 
     Ok(hi << 4 | lo)
-}
-
-#[inline(always)]
-fn valid_checksum(sentence: &[u8], expected_checksum: u8) -> bool {
-    let iter = sentence.chunks_exact(8);
-    let rem = iter.remainder();
-
-    let mut acc = 0u64;
-    for chunk in iter {
-        acc ^= u64::from_ne_bytes(chunk.try_into().unwrap());
-    }
-
-    // Fold 8 bytes down to 1
-    acc ^= acc >> 32;
-    acc ^= acc >> 16;
-    acc ^= acc >> 8;
-
-    rem.iter().fold(acc as u8, |a, &b| a ^ b) == expected_checksum
 }
 
 #[cfg(test)]

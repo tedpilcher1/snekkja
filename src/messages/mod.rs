@@ -29,19 +29,20 @@ impl AisMessage {
         bytes: &[u8],
         fill_bits: usize,
     ) -> (AisMessageType, Option<Self>) {
-        unarmored_buf.unarmor(bytes, fill_bits);
-        let message_type = AisMessageType::from(get_bits_u8::<0, 6>(unarmored_buf.as_slice()));
+        unsafe {
+            unarmored_buf.unarmor(bytes, fill_bits);
+        }
+
+        let bytes = unarmored_buf.as_slice();
+
+        let message_type = AisMessageType::from(get_bits_u8::<0, 6>(bytes));
 
         let message = match message_type {
-            1..=3 => Some(AisMessage::PositionReport(PositionReport::from(
-                unarmored_buf.as_slice(),
-            ))),
+            1..=3 => Some(AisMessage::PositionReport(PositionReport::from(bytes))),
             4 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
-                unarmored_buf.as_slice(),
+                bytes,
             ))),
-            5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(
-                unarmored_buf.as_slice(),
-            ))),
+            5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(bytes))),
             _ => None,
         };
 
