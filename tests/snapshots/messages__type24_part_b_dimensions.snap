@@ -1,0 +1,32 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,H7P<1>4UB1I0000F=Aqpoo2P2220,0*3A\")"
+---
+ClassBStaticData(
+    PartB(
+        ClassBStaticDataPartB {
+            message_type: 24,
+            repeat_indicator: 0,
+            mmsi: 503513400,
+            shiptype: PleasureCraft,
+            vendorid: RAY,
+            model: 0,
+            serial: 0,
+            callsign: VMQ9877,
+            dimensions: Vessel {
+                to_bow: Some(
+                    20,
+                ),
+                to_stern: Some(
+                    2,
+                ),
+                to_port: Some(
+                    2,
+                ),
+                to_starboard: Some(
+                    2,
+                ),
+            },
+        },
+    ),
+)

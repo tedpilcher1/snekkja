@@ -1,0 +1,42 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,E>q7CUL6RTh=47bh;PW@Ht@40Wh4@Jwp7:sv@20@@@T7HQ1CQp1U@0,4*1C\")"
+---
+AidToNavigationReport(
+    AidToNavigationReport {
+        message_type: 21,
+        repeat_indicator: 0,
+        mmsi: 999412629,
+        aid_type: PortHandMark,
+        name: MEI ZHOU WAN 18 HAO,
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            119.02292,
+        ),
+        latitude: Some(
+            25.064083,
+        ),
+        to_bow: Some(
+            2,
+        ),
+        to_stern: Some(
+            2,
+        ),
+        to_port: Some(
+            2,
+        ),
+        to_starboard: Some(
+            2,
+        ),
+        epfd: Gps,
+        second: 8,
+        off_position: false,
+        regional: 118,
+        raim: false,
+        virtual_aid: false,
+        assigned: true,
+        name_extension: Some(
+            DENG FU,
+        ),
+    },
+)

@@ -1,12 +1,19 @@
 use crate::messages::{
-    base_station_report::BaseStationReport, class_b_position_report::ClassBPositionReport,
-    position_report::PositionReport, static_voyage_data::StaticVoyageData, utils::get_bits_u8,
+    aid_to_navigation_report::AidToNavigationReport, base_station_report::BaseStationReport,
+    binary_acknowledge::BinaryAcknowledge, class_b_position_report::ClassBPositionReport,
+    class_b_static_data::ClassBStaticData, position_report::PositionReport,
+    sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
+    utils::get_bits_u8,
 };
 
+pub mod aid_to_navigation_report;
 pub mod base_station_report;
+pub mod binary_acknowledge;
 pub mod class_b_position_report;
+pub mod class_b_static_data;
 mod fields;
 pub mod position_report;
+pub mod sar_aircraft_position_report;
 pub mod static_voyage_data;
 mod unarmor;
 mod utils;
@@ -21,6 +28,10 @@ pub enum AisMessage {
     BaseStationReport(BaseStationReport),
     StaticVoyageData(StaticVoyageData),
     ClassBPositionReport(ClassBPositionReport),
+    ClassBStaticData(ClassBStaticData),
+    AidToNavigationReport(AidToNavigationReport),
+    BinaryAcknowledge(BinaryAcknowledge),
+    SarAircraftPositionReport(SarAircraftPositionReport),
 }
 
 impl AisMessage {
@@ -44,9 +55,19 @@ impl AisMessage {
                 bytes,
             ))),
             5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(bytes))),
+            7 => Some(AisMessage::BinaryAcknowledge(BinaryAcknowledge::from(
+                bytes,
+            ))),
+            9 => Some(AisMessage::SarAircraftPositionReport(
+                SarAircraftPositionReport::from(bytes),
+            )),
             18 => Some(AisMessage::ClassBPositionReport(
                 ClassBPositionReport::from(bytes),
             )),
+            21 => Some(AisMessage::AidToNavigationReport(
+                AidToNavigationReport::from(bytes),
+            )),
+            24 => Some(AisMessage::ClassBStaticData(ClassBStaticData::from(bytes))),
             _ => None,
         };
 

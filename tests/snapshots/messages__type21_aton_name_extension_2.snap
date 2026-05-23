@@ -1,0 +1,42 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,B,E>q7CQL`bPW@=47bh;PW@Jh40Wh4?n8P76BG020@@@RWHQ1CQp1U@0,4*76\")"
+---
+AidToNavigationReport(
+    AidToNavigationReport {
+        message_type: 21,
+        repeat_indicator: 0,
+        mmsi: 999412613,
+        aid_type: StarboardHandMark,
+        name: QUAN ZHOU WAN 5 HAO,
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            118.771255,
+        ),
+        latitude: Some(
+            24.81012,
+        ),
+        to_bow: Some(
+            2,
+        ),
+        to_stern: Some(
+            2,
+        ),
+        to_port: Some(
+            2,
+        ),
+        to_starboard: Some(
+            2,
+        ),
+        epfd: Gps,
+        second: 5,
+        off_position: false,
+        regional: 118,
+        raim: false,
+        virtual_aid: false,
+        assigned: true,
+        name_extension: Some(
+            DENG FU,
+        ),
+    },
+)

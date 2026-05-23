@@ -52,6 +52,34 @@ fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
     (val >> const { 64 - START % 8 - LEN }) & const { (1u64 << LEN) - 1 }
 }
 
+/// Reads up to `max_chars` six-bit AIS characters starting at `start_bit`, stopping early at the
+/// first zero value (which encodes '@', forbidden in name extensions by the spec)
+///
+/// Fill bits past the payload are already zeroed by the unarmorer, so this terminates cleanly
+/// without needing the original fill-bits count.
+pub fn decode_text_dynamic<const N: usize>(
+    bytes: &[u8],
+    start_bit: usize,
+    max_chars: usize,
+) -> AisStr<N> {
+    let mut buf = [0u8; N];
+    let mut len = 0usize;
+
+    for (i, slot) in buf.iter_mut().enumerate().take(max_chars.min(N)) {
+        let val = get_bits_dyn(bytes, start_bit + i * 6, 6) as u8;
+        if val == 0 {
+            break;
+        }
+        *slot = if val < 32 { val + 64 } else { val };
+        len = i + 1;
+    }
+
+    AisStr {
+        buf,
+        len: len as u8,
+    }
+}
+
 #[inline(always)]
 fn get_bits_dyn(bytes: &[u8], start: usize, len: usize) -> u64 {
     let shift = 64 - start % 8 - len;

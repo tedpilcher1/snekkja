@@ -1,0 +1,37 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,9>eq`dOwwwJerP0GBrh3Q;@00000,0*02\")"
+---
+SarAircraftPositionReport(
+    SarAircraftPositionReport {
+        message_type: 9,
+        repeat_indicator: 0,
+        mmsi: 987654321,
+        altitude: None,
+        speed_over_ground: None,
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            -73.856,
+        ),
+        latitude: Some(
+            40.712,
+        ),
+        course_over_ground: Some(
+            90.0,
+        ),
+        timestamp: 45,
+        regional: 0,
+        dte: false,
+        assigned: false,
+        raim: false,
+        radio: Sotdma(
+            SotdmaMessage {
+                sync_state: UtcDirect,
+                slot_timeout: 0,
+                sub_message: SlotOffset(
+                    0,
+                ),
+            },
+        ),
+    },
+)

@@ -1,0 +1,14 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,H7P<1>1LPU@D8U8A<0000000000,2*6C\")"
+---
+ClassBStaticData(
+    PartA(
+        ClassBStaticDataPartA {
+            message_type: 24,
+            repeat_indicator: 0,
+            mmsi: 503513400,
+            shipname: WHITEBIRDS,
+        },
+    ),
+)

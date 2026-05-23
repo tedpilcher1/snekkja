@@ -1,0 +1,32 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,B,H44?BB4lDB1>C1CEC130001@F270,0*04\")"
+---
+ClassBStaticData(
+    PartB(
+        ClassBStaticDataPartB {
+            message_type: 24,
+            repeat_indicator: 0,
+            mmsi: 272880200,
+            shiptype: Tug,
+            vendorid: TRA,
+            model: 3,
+            serial: 602195,
+            callsign: USAC,
+            dimensions: Vessel {
+                to_bow: Some(
+                    10,
+                ),
+                to_stern: Some(
+                    22,
+                ),
+                to_port: Some(
+                    2,
+                ),
+                to_starboard: Some(
+                    7,
+                ),
+            },
+        },
+    ),
+)

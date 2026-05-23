@@ -1,0 +1,78 @@
+#[derive(Debug, Clone, Copy)]
+pub enum NavaidType {
+    DefaultUnspecified,
+    ReferencePoint,
+    Racon,
+    FixedStructure,
+    Spare,
+    LightNoSectors,
+    LightWithSectors,
+    LeadingLightFront,
+    LeadingLightRear,
+    BeaconCardinalN,
+    BeaconCardinalE,
+    BeaconCardinalS,
+    BeaconCardinalW,
+    BeaconPortHand,
+    BeaconStarboardHand,
+    BeaconPreferredChannelPortHand,
+    BeaconPreferredChannelStarboardHand,
+    BeaconIsolatedDanger,
+    BeaconSafeWater,
+    BeaconSpecialMark,
+    CardinalMarkN,
+    CardinalMarkE,
+    CardinalMarkS,
+    CardinalMarkW,
+    PortHandMark,
+    StarboardHandMark,
+    PreferredChannelPortHand,
+    PreferredChannelStarboardHand,
+    IsolatedDanger,
+    SafeWater,
+    SpecialMark,
+    LightVesselLanbyRigs,
+}
+
+static TABLE: [NavaidType; 32] = [
+    NavaidType::DefaultUnspecified,
+    NavaidType::ReferencePoint,
+    NavaidType::Racon,
+    NavaidType::FixedStructure,
+    NavaidType::Spare,
+    NavaidType::LightNoSectors,
+    NavaidType::LightWithSectors,
+    NavaidType::LeadingLightFront,
+    NavaidType::LeadingLightRear,
+    NavaidType::BeaconCardinalN,
+    NavaidType::BeaconCardinalE,
+    NavaidType::BeaconCardinalS,
+    NavaidType::BeaconCardinalW,
+    NavaidType::BeaconPortHand,
+    NavaidType::BeaconStarboardHand,
+    NavaidType::BeaconPreferredChannelPortHand,
+    NavaidType::BeaconPreferredChannelStarboardHand,
+    NavaidType::BeaconIsolatedDanger,
+    NavaidType::BeaconSafeWater,
+    NavaidType::BeaconSpecialMark,
+    NavaidType::CardinalMarkN,
+    NavaidType::CardinalMarkE,
+    NavaidType::CardinalMarkS,
+    NavaidType::CardinalMarkW,
+    NavaidType::PortHandMark,
+    NavaidType::StarboardHandMark,
+    NavaidType::PreferredChannelPortHand,
+    NavaidType::PreferredChannelStarboardHand,
+    NavaidType::IsolatedDanger,
+    NavaidType::SafeWater,
+    NavaidType::SpecialMark,
+    NavaidType::LightVesselLanbyRigs,
+];
+
+impl From<u8> for NavaidType {
+    #[inline(always)]
+    fn from(val: u8) -> Self {
+        // Safety: val is 5 bits (0-31), always a valid index
+        unsafe { *TABLE.get_unchecked(val as usize) }
+    }
+}

@@ -6,8 +6,16 @@ mod types;
 
 pub use messages::AisMessage;
 pub use messages::{
-    base_station_report::BaseStationReport, class_b_position_report::ClassBPositionReport,
-    position_report::PositionReport, static_voyage_data::StaticVoyageData,
+    aid_to_navigation_report::AidToNavigationReport,
+    aid_to_navigation_report::NavaidType,
+    base_station_report::BaseStationReport,
+    binary_acknowledge::BinaryAcknowledge,
+    class_b_position_report::ClassBPositionReport,
+    class_b_static_data::{
+        ClassBStaticData, ClassBStaticDataPartA, ClassBStaticDataPartB, Dimensions,
+    },
+    position_report::PositionReport,
+    static_voyage_data::StaticVoyageData,
 };
 pub use parser::Parser;
 pub use types::{AisReportType, RadioChannel, TalkerId};

@@ -1,0 +1,32 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,E>j9dhiQ0a2Hh;TW230a6h72P00@=igf?TQA000003vP10,4*54\")"
+---
+AidToNavigationReport(
+    AidToNavigationReport {
+        message_type: 21,
+        repeat_indicator: 0,
+        mmsi: 992111811,
+        aid_type: FixedStructure,
+        name: BARD1 WINDFARM NE,
+        position_accuracy: Dgps,
+        longitude: Some(
+            6.0193834,
+        ),
+        latitude: Some(
+            54.423267,
+        ),
+        to_bow: None,
+        to_stern: None,
+        to_port: None,
+        to_starboard: None,
+        epfd: Surveyed,
+        second: 61,
+        off_position: false,
+        regional: 0,
+        raim: false,
+        virtual_aid: true,
+        assigned: false,
+        name_extension: None,
+    },
+)
