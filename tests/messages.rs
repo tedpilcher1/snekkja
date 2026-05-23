@@ -98,6 +98,21 @@ fn type3_tokyo_bay() {
     insta::assert_debug_snapshot!(parse(b"!AIVDM,1,1,,A,33bi=B5wP0awIEJDAdSEoVLN0000,0*6C"));
 }
 
+// --- Type 18 ---
+
+#[test]
+fn type18_class_b_channel_b() {
+    insta::assert_debug_snapshot!(parse(b"!AIVDM,1,1,,B,B43JRq00LhTWc5VejDI>wwWUoP06,0*29"));
+}
+#[test]
+fn type18_class_b_display() {
+    insta::assert_debug_snapshot!(parse(b"!AIVDM,1,1,,B,B6:io8@0=21k=`3C:eDJSww4SP00,0*68"));
+}
+#[test]
+fn type18_class_b_channel_a() {
+    insta::assert_debug_snapshot!(parse(b"!AIVDM,1,1,,A,B6:Qno000279<OSPdw`03wWUoP06,0*78"));
+}
+
 // --- Type 4 ---
 
 #[test]

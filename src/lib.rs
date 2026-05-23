@@ -6,8 +6,8 @@ mod types;
 
 pub use messages::AisMessage;
 pub use messages::{
-    base_station_report::BaseStationReport, position_report::PositionReport,
-    static_voyage_data::StaticVoyageData,
+    base_station_report::BaseStationReport, class_b_position_report::ClassBPositionReport,
+    position_report::PositionReport, static_voyage_data::StaticVoyageData,
 };
 pub use parser::Parser;
 pub use types::{AisReportType, RadioChannel, TalkerId};

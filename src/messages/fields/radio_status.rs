@@ -46,6 +46,15 @@ impl RadioStatus {
             _ => Self::Sotdma(SotdmaMessage::parse(bytes, start)),
         }
     }
+
+    #[inline(always)]
+    pub fn parse_with_selector(bytes: &[u8], start: usize) -> Self {
+        if get_bit_dyn(bytes, start) {
+            Self::Itdma(ItdmaMessage::parse(bytes, start + 1))
+        } else {
+            Self::Sotdma(SotdmaMessage::parse(bytes, start + 1))
+        }
+    }
 }
 
 impl SyncState {

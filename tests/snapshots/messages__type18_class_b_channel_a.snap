@@ -1,0 +1,42 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,B6:Qno000279<OSPdw`03wWUoP06,0*78\")"
+---
+ClassBPositionReport(
+    ClassBPositionReport {
+        message_type: 18,
+        repeat_indicator: 0,
+        mmsi: 413693660,
+        speed_over_ground: Some(
+            0.0,
+        ),
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            118.09035,
+        ),
+        latitude: Some(
+            24.543564,
+        ),
+        course_over_ground: Some(
+            0.0,
+        ),
+        true_heading: None,
+        timestamp: 15,
+        regional: 0,
+        cs: true,
+        display: false,
+        dsc: true,
+        band: true,
+        msg22: true,
+        assigned: false,
+        raim: true,
+        radio: Itdma(
+            ItdmaMessage {
+                sync_state: NumberOfReceivedStations,
+                slot_increment: 0,
+                num_slots: 3,
+                keep: false,
+            },
+        ),
+    },
+)

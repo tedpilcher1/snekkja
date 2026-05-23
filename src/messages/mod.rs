@@ -1,9 +1,10 @@
 use crate::messages::{
-    base_station_report::BaseStationReport, position_report::PositionReport,
-    static_voyage_data::StaticVoyageData, utils::get_bits_u8,
+    base_station_report::BaseStationReport, class_b_position_report::ClassBPositionReport,
+    position_report::PositionReport, static_voyage_data::StaticVoyageData, utils::get_bits_u8,
 };
 
 pub mod base_station_report;
+pub mod class_b_position_report;
 mod fields;
 pub mod position_report;
 pub mod static_voyage_data;
@@ -19,6 +20,7 @@ pub enum AisMessage {
     PositionReport(PositionReport),
     BaseStationReport(BaseStationReport),
     StaticVoyageData(StaticVoyageData),
+    ClassBPositionReport(ClassBPositionReport),
 }
 
 impl AisMessage {
@@ -42,6 +44,9 @@ impl AisMessage {
                 bytes,
             ))),
             5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(bytes))),
+            18 => Some(AisMessage::ClassBPositionReport(
+                ClassBPositionReport::from(bytes),
+            )),
             _ => None,
         };
 
