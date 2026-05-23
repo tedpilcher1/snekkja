@@ -1,0 +1,46 @@
+---
+source: tests/messages.rs
+expression: result
+---
+StaticVoyageData(
+    StaticVoyageData {
+        message_type: 5,
+        repeat_indicator: 0,
+        mmsi: 236037000,
+        ais_version: 0,
+        imo: 9242649,
+        callsign: ZDFC2,
+        shipname: MAERSK VIGO,
+        shiptype: Cargo,
+        to_bow: Some(
+            150,
+        ),
+        to_stern: Some(
+            28,
+        ),
+        to_port: Some(
+            12,
+        ),
+        to_starboard: Some(
+            16,
+        ),
+        epfd: Gps,
+        eta_month: Some(
+            3,
+        ),
+        eta_day: Some(
+            18,
+        ),
+        eta_hour: Some(
+            3,
+        ),
+        eta_minute: Some(
+            0,
+        ),
+        draught: Some(
+            9.5,
+        ),
+        destination: ST PET,
+        dte: false,
+    },
+)

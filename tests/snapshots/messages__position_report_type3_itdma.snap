@@ -1,0 +1,42 @@
+---
+source: tests/messages.rs
+expression: msg
+---
+PositionReport(
+    PositionReport {
+        message_type: 3,
+        repeat_indicator: 0,
+        mmsi: 366950460,
+        navigation_status: Some(
+            UnderWayUsingEngine,
+        ),
+        rate_of_turn: None,
+        speed_over_ground: Some(
+            7.0,
+        ),
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            -82.60351,
+        ),
+        latitude: Some(
+            27.736124,
+        ),
+        course_over_ground: Some(
+            193.3,
+        ),
+        true_heading: Some(
+            193,
+        ),
+        timestamp: 17,
+        maneuver_indicator: None,
+        raim: false,
+        radio_status: Itdma(
+            ItdmaMessage {
+                sync_state: UtcDirect,
+                slot_increment: 0,
+                num_slots: 0,
+                keep: false,
+            },
+        ),
+    },
+)

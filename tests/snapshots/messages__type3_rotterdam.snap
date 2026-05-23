@@ -1,0 +1,42 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,B,33aDqfhP00PD2OnMDdF@QOvN205A,0*13\")"
+---
+PositionReport(
+    PositionReport {
+        message_type: 3,
+        repeat_indicator: 0,
+        mmsi: 244660667,
+        navigation_status: Some(
+            UnderWayUsingEngine,
+        ),
+        rate_of_turn: Some(
+            NotAvailable,
+        ),
+        speed_over_ground: Some(
+            0.0,
+        ),
+        position_accuracy: Dgps,
+        longitude: Some(
+            4.3775916,
+        ),
+        latitude: Some(
+            51.246227,
+        ),
+        course_over_ground: Some(
+            13.3,
+        ),
+        true_heading: None,
+        timestamp: 15,
+        maneuver_indicator: None,
+        raim: true,
+        radio_status: Itdma(
+            ItdmaMessage {
+                sync_state: UtcDirect,
+                slot_increment: 21,
+                num_slots: 0,
+                keep: true,
+            },
+        ),
+    },
+)

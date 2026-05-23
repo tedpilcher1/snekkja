@@ -1,0 +1,46 @@
+---
+source: tests/messages.rs
+expression: result
+---
+StaticVoyageData(
+    StaticVoyageData {
+        message_type: 5,
+        repeat_indicator: 0,
+        mmsi: 412328490,
+        ais_version: 0,
+        imo: 0,
+        callsign: BBHE,
+        shipname: ZHONGTIEBOHAI1HAO,
+        shiptype: Passenger,
+        to_bow: Some(
+            32,
+        ),
+        to_stern: Some(
+            150,
+        ),
+        to_port: Some(
+            5,
+        ),
+        to_starboard: Some(
+            19,
+        ),
+        epfd: Gps,
+        eta_month: Some(
+            3,
+        ),
+        eta_day: Some(
+            14,
+        ),
+        eta_hour: Some(
+            16,
+        ),
+        eta_minute: Some(
+            0,
+        ),
+        draught: Some(
+            6.0,
+        ),
+        destination: YANTAH,
+        dte: false,
+    },
+)

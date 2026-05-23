@@ -1,0 +1,44 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,B,133hGvP0000CjLHMG0u==:VN05Ip,0*61\")"
+---
+PositionReport(
+    PositionReport {
+        message_type: 1,
+        repeat_indicator: 0,
+        mmsi: 205264890,
+        navigation_status: Some(
+            UnderWayUsingEngine,
+        ),
+        rate_of_turn: None,
+        speed_over_ground: Some(
+            0.0,
+        ),
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            4.3227935,
+        ),
+        latitude: Some(
+            51.309635,
+        ),
+        course_over_ground: Some(
+            338.0,
+        ),
+        true_heading: Some(
+            339,
+        ),
+        timestamp: 15,
+        maneuver_indicator: None,
+        raim: false,
+        radio_status: Sotdma(
+            SotdmaMessage {
+                sync_state: UtcDirect,
+                slot_timeout: 1,
+                sub_message: UtcHourAndMinute(
+                    11,
+                    30,
+                ),
+            },
+        ),
+    },
+)

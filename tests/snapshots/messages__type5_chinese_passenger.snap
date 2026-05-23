@@ -1,0 +1,44 @@
+---
+source: tests/messages.rs
+expression: result
+---
+StaticVoyageData(
+    StaticVoyageData {
+        message_type: 5,
+        repeat_indicator: 0,
+        mmsi: 413901609,
+        ais_version: 1,
+        imo: 0,
+        callsign: ,
+        shipname: BO CHUAN JIAO 1,
+        shiptype: Passenger,
+        to_bow: Some(
+            5,
+        ),
+        to_stern: Some(
+            20,
+        ),
+        to_port: Some(
+            1,
+        ),
+        to_starboard: Some(
+            4,
+        ),
+        epfd: Gps,
+        eta_month: Some(
+            12,
+        ),
+        eta_day: Some(
+            31,
+        ),
+        eta_hour: None,
+        eta_minute: Some(
+            59,
+        ),
+        draught: Some(
+            0.6,
+        ),
+        destination: ,
+        dte: false,
+    },
+)

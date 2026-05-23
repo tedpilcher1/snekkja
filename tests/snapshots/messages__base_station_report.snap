@@ -1,0 +1,47 @@
+---
+source: tests/messages.rs
+expression: msg
+---
+BaseStationReport(
+    BaseStationReport {
+        message_type: 4,
+        repeat_indicator: 0,
+        mmsi: 2316296,
+        year: Some(
+            1823,
+        ),
+        month: Some(
+            8,
+        ),
+        day: Some(
+            16,
+        ),
+        hour: Some(
+            23,
+        ),
+        minute: Some(
+            41,
+        ),
+        second: Some(
+            20,
+        ),
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            -39.8843,
+        ),
+        latitude: Some(
+            -43.610413,
+        ),
+        epfd: Undefined,
+        raim: false,
+        radio_status: Sotdma(
+            SotdmaMessage {
+                sync_state: UtcDirect,
+                slot_timeout: 0,
+                sub_message: SlotOffset(
+                    0,
+                ),
+            },
+        ),
+    },
+)

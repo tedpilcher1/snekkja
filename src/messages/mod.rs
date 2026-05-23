@@ -48,18 +48,3 @@ impl AisMessage {
         (message_type, message)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::messages::{AisMessage, Unarmored};
-
-    #[test]
-    fn can_parse_ais_message_type_1() {
-        let mut unarmored_buf = Unarmored::new();
-        let bytes = b"177KQJ5000G?tO`K>RA1wUbN0TKH";
-
-        let (ais_message_type, _ais_message) = AisMessage::parse(&mut unarmored_buf, bytes, 0);
-
-        assert_eq!(ais_message_type, 1)
-    }
-}

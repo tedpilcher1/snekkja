@@ -6,6 +6,10 @@ edition = "2024"
 [dependencies]
 criterion = "0.8.2"
 
+[dev-dependencies]
+insta = "1"
+test-case = "3.3.1"
+
 [profile.release]
 opt-level = 3
 lto = "fat"

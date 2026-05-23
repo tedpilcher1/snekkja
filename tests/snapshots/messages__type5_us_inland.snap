@@ -1,0 +1,46 @@
+---
+source: tests/messages.rs
+expression: result
+---
+StaticVoyageData(
+    StaticVoyageData {
+        message_type: 5,
+        repeat_indicator: 0,
+        mmsi: 366995230,
+        ais_version: 0,
+        imo: 0,
+        callsign: WDC2580,
+        shipname: CAPT BILL IKNER,
+        shiptype: TowingLarge,
+        to_bow: Some(
+            6,
+        ),
+        to_stern: Some(
+            20,
+        ),
+        to_port: Some(
+            5,
+        ),
+        to_starboard: Some(
+            5,
+        ),
+        epfd: Gps,
+        eta_month: Some(
+            9,
+        ),
+        eta_day: Some(
+            18,
+        ),
+        eta_hour: Some(
+            21,
+        ),
+        eta_minute: Some(
+            0,
+        ),
+        draught: Some(
+            3.0,
+        ),
+        destination: KROTZ,
+        dte: false,
+    },
+)

@@ -1,0 +1,46 @@
+---
+source: tests/messages.rs
+expression: result
+---
+StaticVoyageData(
+    StaticVoyageData {
+        message_type: 5,
+        repeat_indicator: 0,
+        mmsi: 258315000,
+        ais_version: 0,
+        imo: 6514895,
+        callsign: LFNA,
+        shipname: FALKVIK,
+        shiptype: Cargo,
+        to_bow: Some(
+            40,
+        ),
+        to_stern: Some(
+            10,
+        ),
+        to_port: Some(
+            4,
+        ),
+        to_starboard: Some(
+            5,
+        ),
+        epfd: Gps,
+        eta_month: Some(
+            3,
+        ),
+        eta_day: Some(
+            14,
+        ),
+        eta_hour: Some(
+            12,
+        ),
+        eta_minute: Some(
+            40,
+        ),
+        draught: Some(
+            3.8,
+        ),
+        destination: FORUS,
+        dte: false,
+    },
+)
