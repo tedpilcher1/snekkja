@@ -33,10 +33,10 @@ impl Unarmored {
 
     #[inline(always)]
     pub fn as_slice(&self) -> &[u8] {
-        // Safety: self.len is always set to bit_count.div_ceil(8) where
-        // bit_count = bytes.len() * 6. AIS payloads fit well within the
-        // 256-byte buf, so self.len <= buf.len() is always satisfied
-        unsafe { self.buf.get_unchecked(..self.len) }
+        // Safety: self.len <= 249 always (AIS payloads are << 256 bytes), so
+        // self.len + 7 <= 256. The 7 bytes past self.len are zeroed by unarmor()
+        // to guarantee a full u64 read anywhere in the payload.
+        unsafe { self.buf.get_unchecked(..self.len + 7) }
     }
 
     #[inline]
@@ -110,6 +110,10 @@ impl Unarmored {
                         0xFFu8 << (fill_bits - bits_in_final_byte);
                 }
             }
+
+            // Zero 7 bytes past the payload so any u64 read starting at the
+            // last payload byte is always in bounds and reads clean zeros.
+            core::ptr::write_bytes(self.buf.as_mut_ptr().add(self.len), 0, 7);
         }
     }
 }

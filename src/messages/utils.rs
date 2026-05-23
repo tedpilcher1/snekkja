@@ -44,31 +44,24 @@ pub fn decode_text_fixed<const N: usize>(
 
 #[inline(always)]
 fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
-    let byte_start = const { START / 8 };
-    let bytes_needed = const { (START % 8 + LEN).div_ceil(8) };
-    let shift = const { (START % 8 + LEN).div_ceil(8) * 8 - START % 8 - LEN };
-    let mask: u64 = const { (1u64 << LEN) - 1 };
+    // Safety: as_slice() guarantees 7 zero bytes past the payload, so any
+    // byte_start < self.len has a full 8 bytes available to read.
+    let val =
+        unsafe { (bytes.as_ptr().add(const { START / 8 }) as *const u64).read_unaligned() }.to_be();
 
-    let mut val = 0u64;
-    for i in 0..bytes_needed {
-        val = (val << 8) | bytes[byte_start + i] as u64;
-    }
-    (val >> shift) & mask
+    (val >> const { 64 - START % 8 - LEN }) & const { (1u64 << LEN) - 1 }
 }
 
 #[inline(always)]
 fn get_bits_dyn(bytes: &[u8], start: usize, len: usize) -> u64 {
-    let byte_start = start / 8;
-    let bit_offset = start % 8;
-    let bytes_needed = (bit_offset + len).div_ceil(8);
+    let shift = 64 - start % 8 - len;
+    let mask = (1u64 << len) - 1;
 
-    let mut val = 0u64;
-    for i in 0..bytes_needed {
-        val = (val << 8) | bytes[byte_start + i] as u64;
-    }
+    // Safety: as_slice() guarantees 7 zero bytes past the payload, so any
+    // byte_start < self.len has a full 8 bytes available to read.
+    let val = unsafe { (bytes.as_ptr().add(start / 8) as *const u64).read_unaligned() }.to_be();
 
-    let shift = bytes_needed * 8 - bit_offset - len;
-    (val >> shift) & ((1u64 << len) - 1)
+    (val >> shift) & mask
 }
 
 #[inline(always)]
