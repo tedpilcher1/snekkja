@@ -46,7 +46,7 @@ impl From<&[u8]> for ExtendedClassBPositionReport {
         let true_heading = parse_true_heading(get_bits::<u16, 124, 9>(bytes));
         let timestamp = get_bits::<u8, 133, 6>(bytes);
         let regional = get_bits::<u8, 139, 4>(bytes);
-        let shipname = decode_text_fixed::<20>(bytes, 143, 20);
+        let shipname = decode_text_fixed::<20, 143>(bytes);
         let ship_type = ShipType::from(get_bits::<u8, 263, 8>(bytes));
         let to_bow = match get_bits::<u16, 271, 9>(bytes) {
             0 => None,

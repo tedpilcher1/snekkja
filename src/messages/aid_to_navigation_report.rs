@@ -38,7 +38,7 @@ impl From<&[u8]> for AidToNavigationReport {
         let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
         let mmsi = get_bits::<u32, 8, 30>(bytes);
         let aid_type = NavaidType::from(get_bits::<u8, 38, 5>(bytes));
-        let name = decode_text_fixed::<20>(bytes, 43, 20);
+        let name = decode_text_fixed::<20, 43>(bytes);
         let position_accuracy = PositionAccuracy::from(get_bits::<u8, 163, 1>(bytes));
         let longitude = parse_longitude(get_bits::<i32, 164, 28>(bytes));
         let latitude = parse_latitude(get_bits::<i32, 192, 27>(bytes));

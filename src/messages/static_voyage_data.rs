@@ -34,8 +34,8 @@ impl From<&[u8]> for StaticVoyageData {
         let mmsi = get_bits::<u32, 8, 30>(bytes);
         let ais_version = get_bits::<u8, 38, 2>(bytes);
         let imo = get_bits::<u32, 40, 30>(bytes);
-        let callsign = decode_text_fixed::<7>(bytes, 70, 7);
-        let shipname = decode_text_fixed::<20>(bytes, 112, 20);
+        let callsign = decode_text_fixed::<7, 70>(bytes);
+        let shipname = decode_text_fixed::<20, 112>(bytes);
         let shiptype = ShipType::from(get_bits::<u8, 232, 8>(bytes));
         let to_bow = match get_bits::<u16, 240, 9>(bytes) {
             0 => None,
@@ -71,7 +71,7 @@ impl From<&[u8]> for StaticVoyageData {
             m => Some(m),
         };
         let draught = parse_draught(get_bits::<u8, 294, 8>(bytes));
-        let destination = decode_text_fixed::<20>(bytes, 302, 20);
+        let destination = decode_text_fixed::<20, 302>(bytes);
         // bit 422; reads 0 (=ready) on truncated 420/422-bit messages, matching the spec default
         let dte = get_bit::<422>(bytes);
 

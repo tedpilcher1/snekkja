@@ -55,14 +55,14 @@ impl From<&[u8]> for ClassBStaticData {
                 message_type,
                 repeat_indicator,
                 mmsi,
-                shipname: decode_text_fixed::<20>(bytes, 40, 20),
+                shipname: decode_text_fixed::<20, 40>(bytes),
             }),
             _ => {
                 let shiptype = ShipType::from(get_bits::<u8, 40, 8>(bytes));
-                let vendorid = decode_text_fixed::<3>(bytes, 48, 3);
+                let vendorid = decode_text_fixed::<3, 48>(bytes);
                 let model = get_bits::<u8, 66, 4>(bytes);
                 let serial = get_bits::<u32, 70, 20>(bytes);
-                let callsign = decode_text_fixed::<7>(bytes, 90, 7);
+                let callsign = decode_text_fixed::<7, 90>(bytes);
                 let dimensions = if is_auxiliary_mmsi(mmsi) {
                     Dimensions::Mothership {
                         mmsi: get_bits::<u32, 132, 30>(bytes),
