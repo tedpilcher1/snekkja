@@ -10,3 +10,91 @@ snekkja = { path = "../" }
 [[bench]]
 name = "bench"
 harness = false
+
+[[bench]]
+name = "bench_mixed"
+harness = false
+
+[[bench]]
+name = "bench_type_1_2_3"
+harness = false
+
+[[bench]]
+name = "bench_type_4"
+harness = false
+
+[[bench]]
+name = "bench_type_5"
+harness = false
+
+[[bench]]
+name = "bench_type_6"
+harness = false
+
+[[bench]]
+name = "bench_type_7_13"
+harness = false
+
+[[bench]]
+name = "bench_type_8"
+harness = false
+
+[[bench]]
+name = "bench_type_9"
+harness = false
+
+[[bench]]
+name = "bench_type_10"
+harness = false
+
+[[bench]]
+name = "bench_type_12"
+harness = false
+
+[[bench]]
+name = "bench_type_14"
+harness = false
+
+[[bench]]
+name = "bench_type_15"
+harness = false
+
+[[bench]]
+name = "bench_type_16"
+harness = false
+
+[[bench]]
+name = "bench_type_18"
+harness = false
+
+[[bench]]
+name = "bench_type_19"
+harness = false
+
+[[bench]]
+name = "bench_type_20"
+harness = false
+
+[[bench]]
+name = "bench_type_21"
+harness = false
+
+[[bench]]
+name = "bench_type_22"
+harness = false
+
+[[bench]]
+name = "bench_type_23"
+harness = false
+
+[[bench]]
+name = "bench_type_24"
+harness = false
+
+[[bench]]
+name = "bench_type_25"
+harness = false
+
+[[bench]]
+name = "bench_type_27"
+harness = false
