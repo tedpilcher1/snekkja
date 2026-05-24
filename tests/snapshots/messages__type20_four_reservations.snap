@@ -1,0 +1,51 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,D1mg=5@6A6fp<Pc6DBhOMhI0lGL,2*67\")"
+---
+DataLinkManagement(
+    DataLinkManagement {
+        message_type: 20,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        offset1: 100,
+        number1: 4,
+        timeout1: 3,
+        increment1: 750,
+        offset2: Some(
+            200,
+        ),
+        number2: Some(
+            2,
+        ),
+        timeout2: Some(
+            5,
+        ),
+        increment2: Some(
+            1125,
+        ),
+        offset3: Some(
+            300,
+        ),
+        number3: Some(
+            1,
+        ),
+        timeout3: Some(
+            7,
+        ),
+        increment3: Some(
+            1500,
+        ),
+        offset4: Some(
+            400,
+        ),
+        number4: Some(
+            3,
+        ),
+        timeout4: Some(
+            2,
+        ),
+        increment4: Some(
+            375,
+        ),
+    },
+)

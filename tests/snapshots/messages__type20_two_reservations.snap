@@ -1,0 +1,35 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,D1mg=5@6A6fp<Pc6D,2*39\")"
+---
+DataLinkManagement(
+    DataLinkManagement {
+        message_type: 20,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        offset1: 100,
+        number1: 4,
+        timeout1: 3,
+        increment1: 750,
+        offset2: Some(
+            200,
+        ),
+        number2: Some(
+            2,
+        ),
+        timeout2: Some(
+            5,
+        ),
+        increment2: Some(
+            1125,
+        ),
+        offset3: None,
+        number3: None,
+        timeout3: None,
+        increment3: None,
+        offset4: None,
+        number4: None,
+        timeout4: None,
+        increment4: None,
+    },
+)
