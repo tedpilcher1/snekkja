@@ -4,9 +4,10 @@ use crate::messages::{
     assignment_mode_command::AssignmentModeCommand, base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge, channel_management::ChannelManagement,
     class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
-    data_link_management::DataLinkManagement, group_assignment_command::GroupAssignmentCommand,
-    interrogation::Interrogation, position_report::PositionReport,
-    sar_aircraft_position_report::SarAircraftPositionReport,
+    data_link_management::DataLinkManagement,
+    extended_class_b_position_report::ExtendedClassBPositionReport,
+    group_assignment_command::GroupAssignmentCommand, interrogation::Interrogation,
+    position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
     single_slot_binary_message::SingleSlotBinaryMessage, static_voyage_data::StaticVoyageData,
     utc_date_inquiry::UtcDateInquiry, utils::get_bits,
 };
@@ -20,6 +21,7 @@ pub mod channel_management;
 pub mod class_b_position_report;
 pub mod class_b_static_data;
 pub mod data_link_management;
+pub mod extended_class_b_position_report;
 mod fields;
 pub mod group_assignment_command;
 pub mod interrogation;
@@ -41,6 +43,7 @@ pub enum AisMessage {
     BaseStationReport(BaseStationReport),
     StaticVoyageData(StaticVoyageData),
     ClassBPositionReport(ClassBPositionReport),
+    ExtendedClassBPositionReport(ExtendedClassBPositionReport),
     ClassBStaticData(ClassBStaticData),
     AidToNavigationReport(AidToNavigationReport),
     BinaryAcknowledge(BinaryAcknowledge),
@@ -92,6 +95,9 @@ impl AisMessage {
             )),
             18 => Some(AisMessage::ClassBPositionReport(
                 ClassBPositionReport::from(bytes),
+            )),
+            19 => Some(AisMessage::ExtendedClassBPositionReport(
+                ExtendedClassBPositionReport::from(bytes),
             )),
             20 => Some(AisMessage::DataLinkManagement(DataLinkManagement::from(
                 bytes,

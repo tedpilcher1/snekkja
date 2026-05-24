@@ -1,0 +1,47 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,C52T=1h0@N`pUL5P4l1kmKg0N6:2M0:hPHNT:U111110N1T52230,0*5D\")"
+---
+ExtendedClassBPositionReport(
+    ExtendedClassBPositionReport {
+        message_type: 19,
+        repeat_indicator: 0,
+        mmsi: 338234631,
+        speed_over_ground: Some(
+            6.5,
+        ),
+        position_accuracy: Dgps,
+        longitude: Some(
+            -76.123,
+        ),
+        latitude: Some(
+            38.456,
+        ),
+        course_over_ground: Some(
+            185.3,
+        ),
+        true_heading: Some(
+            183,
+        ),
+        timestamp: 30,
+        regional: 0,
+        shipname: OCEAN EXPLORER,
+        ship_type: Passenger,
+        to_bow: Some(
+            25,
+        ),
+        to_stern: Some(
+            10,
+        ),
+        to_port: Some(
+            4,
+        ),
+        to_starboard: Some(
+            4,
+        ),
+        epfd: Gps,
+        raim: true,
+        dte: false,
+        assigned: false,
+    },
+)

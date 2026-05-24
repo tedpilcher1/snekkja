@@ -1,0 +1,29 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,C1mg=5@3wk?8mP=18D3Q3wv0TN``:T82K11111111110S0000000,0*75\")"
+---
+ExtendedClassBPositionReport(
+    ExtendedClassBPositionReport {
+        message_type: 19,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        speed_over_ground: None,
+        position_accuracy: UnaugmentedGnss,
+        longitude: None,
+        latitude: None,
+        course_over_ground: None,
+        true_heading: None,
+        timestamp: 60,
+        regional: 0,
+        shipname: ROTTERDAM,
+        ship_type: Cargo,
+        to_bow: None,
+        to_stern: None,
+        to_port: None,
+        to_starboard: None,
+        epfd: Undefined,
+        raim: false,
+        dte: false,
+        assigned: false,
+    },
+)
