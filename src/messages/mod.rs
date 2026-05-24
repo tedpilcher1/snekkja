@@ -8,7 +8,8 @@ use crate::messages::{
     data_link_management::DataLinkManagement,
     extended_class_b_position_report::ExtendedClassBPositionReport,
     group_assignment_command::GroupAssignmentCommand, interrogation::Interrogation,
-    position_report::PositionReport, safety_broadcast_message::SafetyBroadcastMessage,
+    long_range_position_report::LongRangePositionReport, position_report::PositionReport,
+    safety_broadcast_message::SafetyBroadcastMessage,
     sar_aircraft_position_report::SarAircraftPositionReport,
     single_slot_binary_message::SingleSlotBinaryMessage, static_voyage_data::StaticVoyageData,
     utc_date_inquiry::UtcDateInquiry, utils::get_bits,
@@ -29,6 +30,7 @@ pub mod extended_class_b_position_report;
 mod fields;
 pub mod group_assignment_command;
 pub mod interrogation;
+pub mod long_range_position_report;
 pub mod position_report;
 pub mod safety_broadcast_message;
 pub mod sar_aircraft_position_report;
@@ -64,6 +66,7 @@ pub enum AisMessage {
     ChannelManagement(ChannelManagement),
     GroupAssignmentCommand(GroupAssignmentCommand),
     SingleSlotBinaryMessage(SingleSlotBinaryMessage),
+    LongRangePositionReport(LongRangePositionReport),
 }
 
 impl AisMessage {
@@ -131,6 +134,9 @@ impl AisMessage {
             24 => Some(AisMessage::ClassBStaticData(ClassBStaticData::from(bytes))),
             25 => Some(AisMessage::SingleSlotBinaryMessage(
                 SingleSlotBinaryMessage::from(bytes),
+            )),
+            27 => Some(AisMessage::LongRangePositionReport(
+                LongRangePositionReport::from(bytes),
             )),
             _ => None,
         };

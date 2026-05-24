@@ -1,0 +1,19 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,K1mg=5Cn`>6bTOwv,0*63\")"
+---
+LongRangePositionReport(
+    LongRangePositionReport {
+        message_type: 27,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        position_accuracy: UnaugmentedGnss,
+        raim: false,
+        nav_status: None,
+        longitude: None,
+        latitude: None,
+        speed_over_ground: None,
+        course_over_ground: None,
+        gnss: true,
+    },
+)
