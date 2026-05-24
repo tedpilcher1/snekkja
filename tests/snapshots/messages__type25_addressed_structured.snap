@@ -1,0 +1,38 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,I1mg=5OcNJ;41@Jg=,0*1A\")"
+---
+SingleSlotBinaryMessage(
+    SingleSlotBinaryMessage {
+        message_type: 25,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        addressed: true,
+        structured: true,
+        dest_mmsi: Some(
+            987654321,
+        ),
+        app_id: Some(
+            321,
+        ),
+        data_bits: 18,
+        data: [
+            171,
+            205,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ],
+    },
+)

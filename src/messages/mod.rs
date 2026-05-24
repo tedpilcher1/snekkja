@@ -6,7 +6,8 @@ use crate::messages::{
     class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
     data_link_management::DataLinkManagement, group_assignment_command::GroupAssignmentCommand,
     interrogation::Interrogation, position_report::PositionReport,
-    sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
+    sar_aircraft_position_report::SarAircraftPositionReport,
+    single_slot_binary_message::SingleSlotBinaryMessage, static_voyage_data::StaticVoyageData,
     utc_date_inquiry::UtcDateInquiry, utils::get_bits,
 };
 
@@ -24,6 +25,7 @@ pub mod group_assignment_command;
 pub mod interrogation;
 pub mod position_report;
 pub mod sar_aircraft_position_report;
+pub mod single_slot_binary_message;
 pub mod static_voyage_data;
 mod unarmor;
 pub mod utc_date_inquiry;
@@ -50,6 +52,7 @@ pub enum AisMessage {
     AssignmentModeCommand(AssignmentModeCommand),
     ChannelManagement(ChannelManagement),
     GroupAssignmentCommand(GroupAssignmentCommand),
+    SingleSlotBinaryMessage(SingleSlotBinaryMessage),
 }
 
 impl AisMessage {
@@ -103,6 +106,9 @@ impl AisMessage {
                 GroupAssignmentCommand::from(bytes),
             )),
             24 => Some(AisMessage::ClassBStaticData(ClassBStaticData::from(bytes))),
+            25 => Some(AisMessage::SingleSlotBinaryMessage(
+                SingleSlotBinaryMessage::from(bytes),
+            )),
             _ => None,
         };
 
