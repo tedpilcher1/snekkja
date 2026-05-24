@@ -1,0 +1,12 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,>1mg=5@p5HTL5@Ttp4j1L58pTpN1<Pt4hTpN18E0u9@DB0Tr0<P4ppDh,2*56\")"
+---
+SafetyBroadcastMessage(
+    SafetyBroadcastMessage {
+        message_type: 14,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        text: NAVIGATIONAL WARNING SHOALING REPORTED IN CHANNEL,
+    },
+)

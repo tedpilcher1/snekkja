@@ -1,0 +1,12 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,>52T=1h4hj1<PU1>0l5T@5V1HE=<Dj04M8uDpB10u<U@Ttr3G8r333@D,2*65\")"
+---
+SafetyBroadcastMessage(
+    SafetyBroadcastMessage {
+        message_type: 14,
+        repeat_indicator: 0,
+        mmsi: 338234631,
+        text: ALL SHIPS MAYDAY VESSEL AGROUND POSITION 52N 004E,
+    },
+)
