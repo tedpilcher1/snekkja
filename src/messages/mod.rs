@@ -1,19 +1,22 @@
 use crate::messages::{
     addressed_safety_message::AddressedSafetyMessage,
-    aid_to_navigation_report::AidToNavigationReport, base_station_report::BaseStationReport,
+    aid_to_navigation_report::AidToNavigationReport,
+    assignment_mode_command::AssignmentModeCommand, base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge, class_b_position_report::ClassBPositionReport,
-    class_b_static_data::ClassBStaticData, position_report::PositionReport,
-    sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
-    utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
+    class_b_static_data::ClassBStaticData, interrogation::Interrogation,
+    position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
+    static_voyage_data::StaticVoyageData, utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
 };
 
 pub mod addressed_safety_message;
 pub mod aid_to_navigation_report;
+pub mod assignment_mode_command;
 pub mod base_station_report;
 pub mod binary_acknowledge;
 pub mod class_b_position_report;
 pub mod class_b_static_data;
 mod fields;
+pub mod interrogation;
 pub mod position_report;
 pub mod sar_aircraft_position_report;
 pub mod static_voyage_data;
@@ -37,6 +40,8 @@ pub enum AisMessage {
     SarAircraftPositionReport(SarAircraftPositionReport),
     UtcDateInquiry(UtcDateInquiry),
     AddressedSafetyMessage(AddressedSafetyMessage),
+    Interrogation(Interrogation),
+    AssignmentModeCommand(AssignmentModeCommand),
 }
 
 impl AisMessage {
@@ -69,6 +74,10 @@ impl AisMessage {
             10 => Some(AisMessage::UtcDateInquiry(UtcDateInquiry::from(bytes))),
             12 => Some(AisMessage::AddressedSafetyMessage(
                 AddressedSafetyMessage::from(bytes),
+            )),
+            15 => Some(AisMessage::Interrogation(Interrogation::from(bytes))),
+            16 => Some(AisMessage::AssignmentModeCommand(
+                AssignmentModeCommand::from(bytes),
             )),
             18 => Some(AisMessage::ClassBPositionReport(
                 ClassBPositionReport::from(bytes),

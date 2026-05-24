@@ -1,0 +1,17 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,@1mg=5CcNJ;4<P20,0*10\")"
+---
+AssignmentModeCommand(
+    AssignmentModeCommand {
+        message_type: 16,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        mmsi1: 987654321,
+        offset1: 200,
+        increment1: 8,
+        mmsi2: None,
+        offset2: None,
+        increment2: None,
+    },
+)

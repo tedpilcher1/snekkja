@@ -1,0 +1,29 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,?1mg=5CcNJ;4<000001b4N?@Au0,2*5D\")"
+---
+Interrogation(
+    Interrogation {
+        message_type: 15,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        mmsi1: 987654321,
+        type1_1: 3,
+        offset1_1: 0,
+        type1_2: Some(
+            0,
+        ),
+        offset1_2: Some(
+            0,
+        ),
+        mmsi2: Some(
+            111222333,
+        ),
+        type2_1: Some(
+            1,
+        ),
+        offset2_1: Some(
+            500,
+        ),
+    },
+)
