@@ -1,0 +1,28 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,G1mg=5@2sPv703Q1oR000000400,2*2A\")"
+---
+GroupAssignmentCommand(
+    GroupAssignmentCommand {
+        message_type: 23,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        ne_lon: Some(
+            5.0,
+        ),
+        ne_lat: Some(
+            53.0,
+        ),
+        sw_lon: Some(
+            3.0,
+        ),
+        sw_lat: Some(
+            51.0,
+        ),
+        station_type: 0,
+        ship_type: NotAvailable,
+        txrx: 0,
+        interval: 4,
+        quiet: 0,
+    },
+)

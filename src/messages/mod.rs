@@ -4,9 +4,10 @@ use crate::messages::{
     assignment_mode_command::AssignmentModeCommand, base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge, channel_management::ChannelManagement,
     class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
-    data_link_management::DataLinkManagement, interrogation::Interrogation,
-    position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
-    static_voyage_data::StaticVoyageData, utc_date_inquiry::UtcDateInquiry, utils::get_bits,
+    data_link_management::DataLinkManagement, group_assignment_command::GroupAssignmentCommand,
+    interrogation::Interrogation, position_report::PositionReport,
+    sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
+    utc_date_inquiry::UtcDateInquiry, utils::get_bits,
 };
 
 pub mod addressed_safety_message;
@@ -19,6 +20,7 @@ pub mod class_b_position_report;
 pub mod class_b_static_data;
 pub mod data_link_management;
 mod fields;
+pub mod group_assignment_command;
 pub mod interrogation;
 pub mod position_report;
 pub mod sar_aircraft_position_report;
@@ -47,6 +49,7 @@ pub enum AisMessage {
     DataLinkManagement(DataLinkManagement),
     AssignmentModeCommand(AssignmentModeCommand),
     ChannelManagement(ChannelManagement),
+    GroupAssignmentCommand(GroupAssignmentCommand),
 }
 
 impl AisMessage {
@@ -96,6 +99,9 @@ impl AisMessage {
             22 => Some(AisMessage::ChannelManagement(ChannelManagement::from(
                 bytes,
             ))),
+            23 => Some(AisMessage::GroupAssignmentCommand(
+                GroupAssignmentCommand::from(bytes),
+            )),
             24 => Some(AisMessage::ClassBStaticData(ClassBStaticData::from(bytes))),
             _ => None,
         };

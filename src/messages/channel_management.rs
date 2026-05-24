@@ -1,4 +1,7 @@
-use crate::messages::utils::{get_bit, get_bits};
+use crate::messages::{
+    fields::primitives::{parse_lat_i1, parse_lon_i1},
+    utils::{get_bit, get_bits},
+};
 
 #[derive(Debug)]
 pub enum ChannelManagementTarget {
@@ -70,22 +73,5 @@ impl From<&[u8]> for ChannelManagement {
             band_b,
             zonesize,
         }
-    }
-}
-
-// I1 encoding: 0.1-minute units. Not-available matches message 17 short form.
-#[inline(always)]
-fn parse_lon_i1(data: i32) -> Option<f32> {
-    match data {
-        108_600 => None,
-        _ => Some(data as f32 / 600.0),
-    }
-}
-
-#[inline(always)]
-fn parse_lat_i1(data: i32) -> Option<f32> {
-    match data {
-        54_600 => None,
-        _ => Some(data as f32 / 600.0),
     }
 }
