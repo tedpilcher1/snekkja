@@ -1,0 +1,47 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,;02?:kQvaL<0N0Bor@N0wh102000,0*74\")"
+---
+BaseStationReport(
+    BaseStationReport {
+        message_type: 11,
+        repeat_indicator: 0,
+        mmsi: 2345678,
+        year: Some(
+            2026,
+        ),
+        month: Some(
+            5,
+        ),
+        day: Some(
+            24,
+        ),
+        hour: Some(
+            12,
+        ),
+        minute: Some(
+            0,
+        ),
+        second: Some(
+            30,
+        ),
+        position_accuracy: UnaugmentedGnss,
+        longitude: Some(
+            4.123,
+        ),
+        latitude: Some(
+            52.456,
+        ),
+        epfd: Gps,
+        raim: true,
+        radio_status: Sotdma(
+            SotdmaMessage {
+                sync_state: UtcDirect,
+                slot_timeout: 0,
+                sub_message: SlotOffset(
+                    0,
+                ),
+            },
+        ),
+    },
+)

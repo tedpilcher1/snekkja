@@ -1,11 +1,13 @@
 use crate::messages::{
+    addressed_safety_message::AddressedSafetyMessage,
     aid_to_navigation_report::AidToNavigationReport, base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge, class_b_position_report::ClassBPositionReport,
     class_b_static_data::ClassBStaticData, position_report::PositionReport,
     sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
-    utils::get_bits_u8,
+    utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
 };
 
+pub mod addressed_safety_message;
 pub mod aid_to_navigation_report;
 pub mod base_station_report;
 pub mod binary_acknowledge;
@@ -16,6 +18,7 @@ pub mod position_report;
 pub mod sar_aircraft_position_report;
 pub mod static_voyage_data;
 mod unarmor;
+pub mod utc_date_inquiry;
 mod utils;
 
 pub(crate) use unarmor::Unarmored;
@@ -32,6 +35,8 @@ pub enum AisMessage {
     AidToNavigationReport(AidToNavigationReport),
     BinaryAcknowledge(BinaryAcknowledge),
     SarAircraftPositionReport(SarAircraftPositionReport),
+    UtcDateInquiry(UtcDateInquiry),
+    AddressedSafetyMessage(AddressedSafetyMessage),
 }
 
 impl AisMessage {
@@ -51,15 +56,19 @@ impl AisMessage {
 
         let message = match message_type {
             1..=3 => Some(AisMessage::PositionReport(PositionReport::from(bytes))),
-            4 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
+            4 | 11 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
                 bytes,
             ))),
             5 => Some(AisMessage::StaticVoyageData(StaticVoyageData::from(bytes))),
-            7 => Some(AisMessage::BinaryAcknowledge(BinaryAcknowledge::from(
+            7 | 13 => Some(AisMessage::BinaryAcknowledge(BinaryAcknowledge::from(
                 bytes,
             ))),
             9 => Some(AisMessage::SarAircraftPositionReport(
                 SarAircraftPositionReport::from(bytes),
+            )),
+            10 => Some(AisMessage::UtcDateInquiry(UtcDateInquiry::from(bytes))),
+            12 => Some(AisMessage::AddressedSafetyMessage(
+                AddressedSafetyMessage::from(bytes),
             )),
             18 => Some(AisMessage::ClassBPositionReport(
                 ClassBPositionReport::from(bytes),

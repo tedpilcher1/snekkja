@@ -1,0 +1,23 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,=1mg=5CcNJ;46`Apu@,4*55\")"
+---
+BinaryAcknowledge(
+    BinaryAcknowledge {
+        message_type: 13,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        mmsi1: 987654321,
+        mmsiseq1: 0,
+        mmsi2: Some(
+            111222333,
+        ),
+        mmsiseq2: Some(
+            1,
+        ),
+        mmsi3: None,
+        mmsiseq3: None,
+        mmsi4: None,
+        mmsiseq4: None,
+    },
+)
