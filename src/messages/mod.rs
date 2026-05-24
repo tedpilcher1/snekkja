@@ -3,8 +3,9 @@ use crate::messages::{
     aid_to_navigation_report::AidToNavigationReport,
     assignment_mode_command::AssignmentModeCommand, base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge, binary_addressed_message::BinaryAddressedMessage,
-    channel_management::ChannelManagement, class_b_position_report::ClassBPositionReport,
-    class_b_static_data::ClassBStaticData, data_link_management::DataLinkManagement,
+    binary_broadcast_message::BinaryBroadcastMessage, channel_management::ChannelManagement,
+    class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
+    data_link_management::DataLinkManagement,
     extended_class_b_position_report::ExtendedClassBPositionReport,
     group_assignment_command::GroupAssignmentCommand, interrogation::Interrogation,
     position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
@@ -18,6 +19,7 @@ pub mod assignment_mode_command;
 pub mod base_station_report;
 pub mod binary_acknowledge;
 pub mod binary_addressed_message;
+pub mod binary_broadcast_message;
 pub mod channel_management;
 pub mod class_b_position_report;
 pub mod class_b_static_data;
@@ -44,6 +46,7 @@ pub enum AisMessage {
     BaseStationReport(BaseStationReport),
     StaticVoyageData(StaticVoyageData),
     BinaryAddressedMessage(BinaryAddressedMessage),
+    BinaryBroadcastMessage(BinaryBroadcastMessage),
     ClassBPositionReport(ClassBPositionReport),
     ExtendedClassBPositionReport(ExtendedClassBPositionReport),
     ClassBStaticData(ClassBStaticData),
@@ -87,6 +90,9 @@ impl AisMessage {
             7 | 13 => Some(AisMessage::BinaryAcknowledge(BinaryAcknowledge::from(
                 bytes,
             ))),
+            8 => Some(AisMessage::BinaryBroadcastMessage(
+                BinaryBroadcastMessage::from(bytes),
+            )),
             9 => Some(AisMessage::SarAircraftPositionReport(
                 SarAircraftPositionReport::from(bytes),
             )),
