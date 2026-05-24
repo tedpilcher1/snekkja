@@ -28,7 +28,7 @@ pub fn decode_text_fixed<const N: usize>(
     let mut trimmed_len = 0usize;
 
     for (i, slot) in buf.iter_mut().enumerate().take(num_chars) {
-        let val = get_bits_dyn(bytes, start + i * 6, 6) as u8;
+        let val = extract_bits_dyn(bytes, start + i * 6, 6) as u8;
         let ch = if val < 32 { val + 64 } else { val };
         *slot = ch;
         if ch != b'@' && ch != b' ' {
@@ -42,14 +42,63 @@ pub fn decode_text_fixed<const N: usize>(
     }
 }
 
+pub trait FromBits {
+    fn from_bits<const LEN: usize>(val: u64) -> Self;
+    fn from_bits_dyn(val: u64, len: usize) -> Self;
+}
+
+impl FromBits for u8 {
+    fn from_bits<const LEN: usize>(val: u64) -> Self {
+        val as u8
+    }
+    fn from_bits_dyn(val: u64, _len: usize) -> Self {
+        val as u8
+    }
+}
+impl FromBits for u16 {
+    fn from_bits<const LEN: usize>(val: u64) -> Self {
+        val as u16
+    }
+    fn from_bits_dyn(val: u64, _len: usize) -> Self {
+        val as u16
+    }
+}
+impl FromBits for u32 {
+    fn from_bits<const LEN: usize>(val: u64) -> Self {
+        val as u32
+    }
+    fn from_bits_dyn(val: u64, _len: usize) -> Self {
+        val as u32
+    }
+}
+impl FromBits for i32 {
+    fn from_bits<const LEN: usize>(val: u64) -> Self {
+        let shift = 32 - LEN;
+        (val as i32) << shift >> shift
+    }
+    fn from_bits_dyn(val: u64, len: usize) -> Self {
+        let shift = 32 - len;
+        (val as i32) << shift >> shift
+    }
+}
+
 #[inline(always)]
-fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
+pub fn get_bits<T: FromBits, const START: usize, const LEN: usize>(bytes: &[u8]) -> T {
     // Safety: as_slice() guarantees 7 zero bytes past the payload, so any
     // byte_start < self.len has a full 8 bytes available to read
     let val =
         unsafe { (bytes.as_ptr().add(const { START / 8 }) as *const u64).read_unaligned() }.to_be();
 
-    (val >> const { 64 - START % 8 - LEN }) & const { (1u64 << LEN) - 1 }
+    let extracted = (val >> const { 64 - START % 8 - LEN }) & const { (1u64 << LEN) - 1 };
+    T::from_bits::<LEN>(extracted)
+}
+
+#[inline(always)]
+pub fn get_bits_dyn<T: FromBits>(bytes: &[u8], range: RangeInclusive<usize>) -> T {
+    let start = *range.start();
+    let len = range.end() - start + 1;
+    let extracted = extract_bits_dyn(bytes, start, len);
+    T::from_bits_dyn(extracted, len)
 }
 
 /// Reads up to `max_chars` six-bit AIS characters starting at `start_bit`, stopping early at the
@@ -66,7 +115,7 @@ pub fn decode_text_dynamic<const N: usize>(
     let mut len = 0usize;
 
     for (i, slot) in buf.iter_mut().enumerate().take(max_chars.min(N)) {
-        let val = get_bits_dyn(bytes, start_bit + i * 6, 6) as u8;
+        let val = extract_bits_dyn(bytes, start_bit + i * 6, 6) as u8;
         if val == 0 {
             break;
         }
@@ -81,7 +130,7 @@ pub fn decode_text_dynamic<const N: usize>(
 }
 
 #[inline(always)]
-fn get_bits_dyn(bytes: &[u8], start: usize, len: usize) -> u64 {
+fn extract_bits_dyn(bytes: &[u8], start: usize, len: usize) -> u64 {
     let shift = 64 - start % 8 - len;
     let mask = (1u64 << len) - 1;
 
@@ -94,41 +143,10 @@ fn get_bits_dyn(bytes: &[u8], start: usize, len: usize) -> u64 {
 
 #[inline(always)]
 pub fn get_bit<const BIT: usize>(bytes: &[u8]) -> bool {
-    get_bits::<BIT, 1>(bytes) != 0
-}
-
-#[inline(always)]
-pub fn get_bits_u8<const START: usize, const LEN: usize>(bytes: &[u8]) -> u8 {
-    get_bits::<START, LEN>(bytes) as u8
-}
-
-#[inline(always)]
-pub fn get_bits_u16<const START: usize, const LEN: usize>(bytes: &[u8]) -> u16 {
-    get_bits::<START, LEN>(bytes) as u16
-}
-
-#[inline(always)]
-pub fn get_bits_u32<const START: usize, const LEN: usize>(bytes: &[u8]) -> u32 {
-    get_bits::<START, LEN>(bytes) as u32
-}
-
-#[inline(always)]
-pub fn get_bits_i32<const START: usize, const LEN: usize>(bytes: &[u8]) -> i32 {
-    let shift = 32 - LEN;
-    (get_bits::<START, LEN>(bytes) as i32) << shift >> shift
+    get_bits::<u8, BIT, 1>(bytes) != 0
 }
 
 #[inline(always)]
 pub fn get_bit_dyn(bytes: &[u8], i: usize) -> bool {
-    get_bits_dyn(bytes, i, 1) != 0
-}
-
-#[inline(always)]
-pub fn get_bits_u8_dyn(bytes: &[u8], range: RangeInclusive<usize>) -> u8 {
-    get_bits_dyn(bytes, *range.start(), range.end() - range.start() + 1) as u8
-}
-
-#[inline(always)]
-pub fn get_bits_u16_dyn(bytes: &[u8], range: RangeInclusive<usize>) -> u16 {
-    get_bits_dyn(bytes, *range.start(), range.end() - range.start() + 1) as u16
+    extract_bits_dyn(bytes, i, 1) != 0
 }

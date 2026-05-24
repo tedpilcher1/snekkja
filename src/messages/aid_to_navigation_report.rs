@@ -5,10 +5,7 @@ use crate::messages::{
         position_accuracy::PositionAccuracy,
         primitives::{parse_latitude, parse_longitude},
     },
-    utils::{
-        AisStr, decode_text_dynamic, decode_text_fixed, get_bit, get_bits_i32, get_bits_u8,
-        get_bits_u16, get_bits_u32,
-    },
+    utils::{AisStr, decode_text_dynamic, decode_text_fixed, get_bit, get_bits},
 };
 
 #[derive(Debug)]
@@ -37,34 +34,34 @@ pub struct AidToNavigationReport {
 
 impl From<&[u8]> for AidToNavigationReport {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let aid_type = NavaidType::from(get_bits_u8::<38, 5>(bytes));
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let aid_type = NavaidType::from(get_bits::<u8, 38, 5>(bytes));
         let name = decode_text_fixed::<20>(bytes, 43, 20);
-        let position_accuracy = PositionAccuracy::from(get_bits_u8::<163, 1>(bytes));
-        let longitude = parse_longitude(get_bits_i32::<164, 28>(bytes));
-        let latitude = parse_latitude(get_bits_i32::<192, 27>(bytes));
-        let to_bow = match get_bits_u16::<219, 9>(bytes) {
+        let position_accuracy = PositionAccuracy::from(get_bits::<u8, 163, 1>(bytes));
+        let longitude = parse_longitude(get_bits::<i32, 164, 28>(bytes));
+        let latitude = parse_latitude(get_bits::<i32, 192, 27>(bytes));
+        let to_bow = match get_bits::<u16, 219, 9>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_stern = match get_bits_u16::<228, 9>(bytes) {
+        let to_stern = match get_bits::<u16, 228, 9>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_port = match get_bits_u8::<237, 6>(bytes) {
+        let to_port = match get_bits::<u8, 237, 6>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_starboard = match get_bits_u8::<243, 6>(bytes) {
+        let to_starboard = match get_bits::<u8, 243, 6>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let epfd = EpfdFixType::from(get_bits_u8::<249, 4>(bytes));
-        let second = get_bits_u8::<253, 6>(bytes);
+        let epfd = EpfdFixType::from(get_bits::<u8, 249, 4>(bytes));
+        let second = get_bits::<u8, 253, 6>(bytes);
         let off_position = get_bit::<259>(bytes);
-        let regional = get_bits_u8::<260, 8>(bytes);
+        let regional = get_bits::<u8, 260, 8>(bytes);
         let raim = get_bit::<268>(bytes);
         let virtual_aid = get_bit::<269>(bytes);
         let assigned = get_bit::<270>(bytes);

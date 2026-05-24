@@ -1,4 +1,4 @@
-use crate::messages::utils::{get_bits_u8, get_bits_u16, get_bits_u32};
+use crate::messages::utils::get_bits;
 
 #[derive(Debug)]
 pub struct DataLinkManagement {
@@ -25,22 +25,22 @@ pub struct DataLinkManagement {
 
 impl From<&[u8]> for DataLinkManagement {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let offset1 = get_bits_u16::<40, 12>(bytes);
-        let number1 = get_bits_u8::<52, 4>(bytes);
-        let timeout1 = get_bits_u8::<56, 3>(bytes);
-        let increment1 = get_bits_u16::<59, 11>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let offset1 = get_bits::<u16, 40, 12>(bytes);
+        let number1 = get_bits::<u8, 52, 4>(bytes);
+        let timeout1 = get_bits::<u8, 56, 3>(bytes);
+        let increment1 = get_bits::<u16, 59, 11>(bytes);
 
         let payload_bits = bytes.len().saturating_sub(7) * 8;
 
         let (offset2, number2, timeout2, increment2) = if payload_bits >= 100 {
             (
-                Some(get_bits_u16::<70, 12>(bytes)),
-                Some(get_bits_u8::<82, 4>(bytes)),
-                Some(get_bits_u8::<86, 3>(bytes)),
-                Some(get_bits_u16::<89, 11>(bytes)),
+                Some(get_bits::<u16, 70, 12>(bytes)),
+                Some(get_bits::<u8, 82, 4>(bytes)),
+                Some(get_bits::<u8, 86, 3>(bytes)),
+                Some(get_bits::<u16, 89, 11>(bytes)),
             )
         } else {
             (None, None, None, None)
@@ -48,10 +48,10 @@ impl From<&[u8]> for DataLinkManagement {
 
         let (offset3, number3, timeout3, increment3) = if payload_bits >= 130 {
             (
-                Some(get_bits_u16::<100, 12>(bytes)),
-                Some(get_bits_u8::<112, 4>(bytes)),
-                Some(get_bits_u8::<116, 3>(bytes)),
-                Some(get_bits_u16::<119, 11>(bytes)),
+                Some(get_bits::<u16, 100, 12>(bytes)),
+                Some(get_bits::<u8, 112, 4>(bytes)),
+                Some(get_bits::<u8, 116, 3>(bytes)),
+                Some(get_bits::<u16, 119, 11>(bytes)),
             )
         } else {
             (None, None, None, None)
@@ -59,10 +59,10 @@ impl From<&[u8]> for DataLinkManagement {
 
         let (offset4, number4, timeout4, increment4) = if payload_bits >= 160 {
             (
-                Some(get_bits_u16::<130, 12>(bytes)),
-                Some(get_bits_u8::<142, 4>(bytes)),
-                Some(get_bits_u8::<146, 3>(bytes)),
-                Some(get_bits_u16::<149, 11>(bytes)),
+                Some(get_bits::<u16, 130, 12>(bytes)),
+                Some(get_bits::<u8, 142, 4>(bytes)),
+                Some(get_bits::<u8, 146, 3>(bytes)),
+                Some(get_bits::<u16, 149, 11>(bytes)),
             )
         } else {
             (None, None, None, None)

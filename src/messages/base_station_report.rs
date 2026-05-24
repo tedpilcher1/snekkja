@@ -5,7 +5,7 @@ use crate::messages::{
         primitives::{parse_latitude, parse_longitude},
         radio_status::RadioStatus,
     },
-    utils::{get_bit, get_bits_i32, get_bits_u8, get_bits_u16, get_bits_u32},
+    utils::{get_bit, get_bits},
 };
 
 #[derive(Debug)]
@@ -29,37 +29,37 @@ pub struct BaseStationReport {
 
 impl From<&[u8]> for BaseStationReport {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let year = match get_bits_u16::<38, 14>(bytes) {
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let year = match get_bits::<u16, 38, 14>(bytes) {
             0 => None,
             y => Some(y),
         };
-        let month = match get_bits_u8::<52, 4>(bytes) {
+        let month = match get_bits::<u8, 52, 4>(bytes) {
             0 => None,
             m => Some(m),
         };
-        let day = match get_bits_u8::<56, 5>(bytes) {
+        let day = match get_bits::<u8, 56, 5>(bytes) {
             0 => None,
             d => Some(d),
         };
-        let hour = match get_bits_u8::<61, 5>(bytes) {
+        let hour = match get_bits::<u8, 61, 5>(bytes) {
             24 => None,
             h => Some(h),
         };
-        let minute = match get_bits_u8::<66, 6>(bytes) {
+        let minute = match get_bits::<u8, 66, 6>(bytes) {
             60 => None,
             m => Some(m),
         };
-        let second = match get_bits_u8::<72, 6>(bytes) {
+        let second = match get_bits::<u8, 72, 6>(bytes) {
             60 => None,
             s => Some(s),
         };
-        let position_accuracy = PositionAccuracy::from(get_bits_u8::<78, 1>(bytes));
-        let longitude = parse_longitude(get_bits_i32::<79, 28>(bytes));
-        let latitude = parse_latitude(get_bits_i32::<107, 27>(bytes));
-        let epfd = EpfdFixType::from(get_bits_u8::<134, 4>(bytes));
+        let position_accuracy = PositionAccuracy::from(get_bits::<u8, 78, 1>(bytes));
+        let longitude = parse_longitude(get_bits::<i32, 79, 28>(bytes));
+        let latitude = parse_latitude(get_bits::<i32, 107, 27>(bytes));
+        let epfd = EpfdFixType::from(get_bits::<u8, 134, 4>(bytes));
         let raim = get_bit::<148>(bytes);
         let radio_status = RadioStatus::parse(bytes, 149, message_type);
 

@@ -1,4 +1,4 @@
-use crate::messages::utils::{get_bit, get_bits_i32, get_bits_u8, get_bits_u16, get_bits_u32};
+use crate::messages::utils::{get_bit, get_bits};
 
 #[derive(Debug)]
 pub enum ChannelManagementTarget {
@@ -31,29 +31,29 @@ pub struct ChannelManagement {
 
 impl From<&[u8]> for ChannelManagement {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let channel_a = get_bits_u16::<40, 12>(bytes);
-        let channel_b = get_bits_u16::<52, 12>(bytes);
-        let txrx = get_bits_u8::<64, 4>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let channel_a = get_bits::<u16, 40, 12>(bytes);
+        let channel_b = get_bits::<u16, 52, 12>(bytes);
+        let txrx = get_bits::<u8, 64, 4>(bytes);
         let power = get_bit::<68>(bytes);
         let addressed = get_bit::<139>(bytes);
         let band_a = get_bit::<140>(bytes);
         let band_b = get_bit::<141>(bytes);
-        let zonesize = get_bits_u8::<142, 3>(bytes);
+        let zonesize = get_bits::<u8, 142, 3>(bytes);
 
         let target = if addressed {
             ChannelManagementTarget::Addressed {
-                dest1: get_bits_u32::<69, 30>(bytes),
-                dest2: get_bits_u32::<104, 30>(bytes),
+                dest1: get_bits::<u32, 69, 30>(bytes),
+                dest2: get_bits::<u32, 104, 30>(bytes),
             }
         } else {
             ChannelManagementTarget::Geographic {
-                ne_lon: parse_lon_i1(get_bits_i32::<69, 18>(bytes)),
-                ne_lat: parse_lat_i1(get_bits_i32::<87, 17>(bytes)),
-                sw_lon: parse_lon_i1(get_bits_i32::<104, 18>(bytes)),
-                sw_lat: parse_lat_i1(get_bits_i32::<122, 17>(bytes)),
+                ne_lon: parse_lon_i1(get_bits::<i32, 69, 18>(bytes)),
+                ne_lat: parse_lat_i1(get_bits::<i32, 87, 17>(bytes)),
+                sw_lon: parse_lon_i1(get_bits::<i32, 104, 18>(bytes)),
+                sw_lat: parse_lat_i1(get_bits::<i32, 122, 17>(bytes)),
             }
         };
 

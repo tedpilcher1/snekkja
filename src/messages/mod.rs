@@ -6,7 +6,7 @@ use crate::messages::{
     class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
     data_link_management::DataLinkManagement, interrogation::Interrogation,
     position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
-    static_voyage_data::StaticVoyageData, utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
+    static_voyage_data::StaticVoyageData, utc_date_inquiry::UtcDateInquiry, utils::get_bits,
 };
 
 pub mod addressed_safety_message;
@@ -62,7 +62,7 @@ impl AisMessage {
 
         let bytes = unarmored_buf.as_slice();
 
-        let message_type = AisMessageType::from(get_bits_u8::<0, 6>(bytes));
+        let message_type = AisMessageType::from(get_bits::<u8, 0, 6>(bytes));
 
         let message = match message_type {
             1..=3 => Some(AisMessage::PositionReport(PositionReport::from(bytes))),

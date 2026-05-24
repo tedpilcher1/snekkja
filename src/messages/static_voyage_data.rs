@@ -1,6 +1,6 @@
 use crate::messages::{
     fields::{epfd_fix_type::EpfdFixType, primitives::parse_draught, ship_type::ShipType},
-    utils::{AisStr, decode_text_fixed, get_bit, get_bits_u8, get_bits_u16, get_bits_u32},
+    utils::{AisStr, decode_text_fixed, get_bit, get_bits},
 };
 
 #[derive(Debug)]
@@ -29,48 +29,48 @@ pub struct StaticVoyageData {
 
 impl From<&[u8]> for StaticVoyageData {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let ais_version = get_bits_u8::<38, 2>(bytes);
-        let imo = get_bits_u32::<40, 30>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let ais_version = get_bits::<u8, 38, 2>(bytes);
+        let imo = get_bits::<u32, 40, 30>(bytes);
         let callsign = decode_text_fixed::<7>(bytes, 70, 7);
         let shipname = decode_text_fixed::<20>(bytes, 112, 20);
-        let shiptype = ShipType::from(get_bits_u8::<232, 8>(bytes));
-        let to_bow = match get_bits_u16::<240, 9>(bytes) {
+        let shiptype = ShipType::from(get_bits::<u8, 232, 8>(bytes));
+        let to_bow = match get_bits::<u16, 240, 9>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_stern = match get_bits_u16::<249, 9>(bytes) {
+        let to_stern = match get_bits::<u16, 249, 9>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_port = match get_bits_u8::<258, 6>(bytes) {
+        let to_port = match get_bits::<u8, 258, 6>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let to_starboard = match get_bits_u8::<264, 6>(bytes) {
+        let to_starboard = match get_bits::<u8, 264, 6>(bytes) {
             0 => None,
             v => Some(v),
         };
-        let epfd = EpfdFixType::from(get_bits_u8::<270, 4>(bytes));
-        let eta_month = match get_bits_u8::<274, 4>(bytes) {
+        let epfd = EpfdFixType::from(get_bits::<u8, 270, 4>(bytes));
+        let eta_month = match get_bits::<u8, 274, 4>(bytes) {
             0 => None,
             m => Some(m),
         };
-        let eta_day = match get_bits_u8::<278, 5>(bytes) {
+        let eta_day = match get_bits::<u8, 278, 5>(bytes) {
             0 => None,
             d => Some(d),
         };
-        let eta_hour = match get_bits_u8::<283, 5>(bytes) {
+        let eta_hour = match get_bits::<u8, 283, 5>(bytes) {
             24 => None,
             h => Some(h),
         };
-        let eta_minute = match get_bits_u8::<288, 6>(bytes) {
+        let eta_minute = match get_bits::<u8, 288, 6>(bytes) {
             60 => None,
             m => Some(m),
         };
-        let draught = parse_draught(get_bits_u8::<294, 8>(bytes));
+        let draught = parse_draught(get_bits::<u8, 294, 8>(bytes));
         let destination = decode_text_fixed::<20>(bytes, 302, 20);
         // bit 422; reads 0 (=ready) on truncated 420/422-bit messages, matching the spec default
         let dte = get_bit::<422>(bytes);

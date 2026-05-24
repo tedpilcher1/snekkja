@@ -1,4 +1,4 @@
-use crate::messages::utils::{get_bit_dyn, get_bits_u8_dyn, get_bits_u16_dyn};
+use crate::messages::utils::{get_bit_dyn, get_bits_dyn};
 
 #[derive(Debug)]
 pub enum RadioStatus {
@@ -73,8 +73,8 @@ impl SyncState {
 impl SotdmaMessage {
     #[inline(always)]
     fn parse(bytes: &[u8], start: usize) -> Self {
-        let sync_state = SyncState::parse(get_bits_u8_dyn(bytes, start..=start + 1));
-        let slot_timeout = get_bits_u8_dyn(bytes, start + 2..=start + 4);
+        let sync_state = SyncState::parse(get_bits_dyn::<u8>(bytes, start..=start + 1));
+        let slot_timeout = get_bits_dyn::<u8>(bytes, start + 2..=start + 4);
         let sub_message = SubMessage::parse(bytes, start + 5, slot_timeout);
         Self {
             sync_state,
@@ -87,9 +87,9 @@ impl SotdmaMessage {
 impl ItdmaMessage {
     #[inline(always)]
     fn parse(bytes: &[u8], start: usize) -> Self {
-        let sync_state = SyncState::parse(get_bits_u8_dyn(bytes, start..=start + 1));
-        let slot_increment = get_bits_u16_dyn(bytes, start + 2..=start + 14);
-        let num_slots = get_bits_u8_dyn(bytes, start + 15..=start + 17);
+        let sync_state = SyncState::parse(get_bits_dyn::<u8>(bytes, start..=start + 1));
+        let slot_increment = get_bits_dyn::<u16>(bytes, start + 2..=start + 14);
+        let num_slots = get_bits_dyn::<u8>(bytes, start + 15..=start + 17);
         let keep = get_bit_dyn(bytes, start + 18);
         Self {
             sync_state,
@@ -104,14 +104,14 @@ impl SubMessage {
     #[inline(always)]
     fn parse(bytes: &[u8], start: usize, slot_timeout: u8) -> Self {
         match slot_timeout {
-            0 => Self::SlotOffset(get_bits_u16_dyn(bytes, start..=start + 13)),
+            0 => Self::SlotOffset(get_bits_dyn::<u16>(bytes, start..=start + 13)),
             1 => {
-                let hour = get_bits_u8_dyn(bytes, start..=start + 4);
-                let minute = get_bits_u8_dyn(bytes, start + 6..=start + 11);
+                let hour = get_bits_dyn::<u8>(bytes, start..=start + 4);
+                let minute = get_bits_dyn::<u8>(bytes, start + 6..=start + 11);
                 Self::UtcHourAndMinute(hour, minute)
             }
-            2 | 4 | 6 => Self::SlotNumber(get_bits_u16_dyn(bytes, start..=start + 13)),
-            _ => Self::ReceivedStations(get_bits_u16_dyn(bytes, start..=start + 13)),
+            2 | 4 | 6 => Self::SlotNumber(get_bits_dyn::<u16>(bytes, start..=start + 13)),
+            _ => Self::ReceivedStations(get_bits_dyn::<u16>(bytes, start..=start + 13)),
         }
     }
 }

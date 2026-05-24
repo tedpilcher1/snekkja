@@ -1,4 +1,4 @@
-use crate::messages::utils::{get_bits_u8, get_bits_u32};
+use crate::messages::utils::get_bits;
 
 #[derive(Debug)]
 pub struct UtcDateInquiry {
@@ -10,10 +10,10 @@ pub struct UtcDateInquiry {
 
 impl From<&[u8]> for UtcDateInquiry {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let dest_mmsi = get_bits_u32::<40, 30>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let dest_mmsi = get_bits::<u32, 40, 30>(bytes);
 
         Self {
             message_type,

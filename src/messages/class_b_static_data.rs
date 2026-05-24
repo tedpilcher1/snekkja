@@ -1,6 +1,6 @@
 use crate::messages::{
     fields::ship_type::ShipType,
-    utils::{AisStr, decode_text_fixed, get_bits_u8, get_bits_u16, get_bits_u32},
+    utils::{AisStr, decode_text_fixed, get_bits},
 };
 
 #[derive(Debug)]
@@ -45,10 +45,10 @@ pub enum Dimensions {
 
 impl From<&[u8]> for ClassBStaticData {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let partno = get_bits_u8::<38, 2>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let partno = get_bits::<u8, 38, 2>(bytes);
 
         match partno {
             0 => Self::PartA(ClassBStaticDataPartA {
@@ -58,30 +58,30 @@ impl From<&[u8]> for ClassBStaticData {
                 shipname: decode_text_fixed::<20>(bytes, 40, 20),
             }),
             _ => {
-                let shiptype = ShipType::from(get_bits_u8::<40, 8>(bytes));
+                let shiptype = ShipType::from(get_bits::<u8, 40, 8>(bytes));
                 let vendorid = decode_text_fixed::<3>(bytes, 48, 3);
-                let model = get_bits_u8::<66, 4>(bytes);
-                let serial = get_bits_u32::<70, 20>(bytes);
+                let model = get_bits::<u8, 66, 4>(bytes);
+                let serial = get_bits::<u32, 70, 20>(bytes);
                 let callsign = decode_text_fixed::<7>(bytes, 90, 7);
                 let dimensions = if is_auxiliary_mmsi(mmsi) {
                     Dimensions::Mothership {
-                        mmsi: get_bits_u32::<132, 30>(bytes),
+                        mmsi: get_bits::<u32, 132, 30>(bytes),
                     }
                 } else {
                     Dimensions::Vessel {
-                        to_bow: match get_bits_u16::<132, 9>(bytes) {
+                        to_bow: match get_bits::<u16, 132, 9>(bytes) {
                             0 => None,
                             v => Some(v),
                         },
-                        to_stern: match get_bits_u16::<141, 9>(bytes) {
+                        to_stern: match get_bits::<u16, 141, 9>(bytes) {
                             0 => None,
                             v => Some(v),
                         },
-                        to_port: match get_bits_u8::<150, 6>(bytes) {
+                        to_port: match get_bits::<u8, 150, 6>(bytes) {
                             0 => None,
                             v => Some(v),
                         },
-                        to_starboard: match get_bits_u8::<156, 6>(bytes) {
+                        to_starboard: match get_bits::<u8, 156, 6>(bytes) {
                             0 => None,
                             v => Some(v),
                         },

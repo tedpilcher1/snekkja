@@ -1,4 +1,4 @@
-use crate::messages::utils::{get_bits_u8, get_bits_u32};
+use crate::messages::utils::get_bits;
 
 #[derive(Debug)]
 pub struct BinaryAcknowledge {
@@ -17,11 +17,11 @@ pub struct BinaryAcknowledge {
 
 impl From<&[u8]> for BinaryAcknowledge {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let mmsi1 = get_bits_u32::<40, 30>(bytes);
-        let mmsiseq1 = get_bits_u8::<70, 2>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let mmsi1 = get_bits::<u32, 40, 30>(bytes);
+        let mmsiseq1 = get_bits::<u8, 70, 2>(bytes);
 
         // Each additional destination occupies 32 bits, present only if the
         // payload byte count covers the relevant bit range
@@ -29,8 +29,8 @@ impl From<&[u8]> for BinaryAcknowledge {
 
         let (mmsi2, mmsiseq2) = if payload_bits > 103 {
             (
-                Some(get_bits_u32::<72, 30>(bytes)),
-                Some(get_bits_u8::<102, 2>(bytes)),
+                Some(get_bits::<u32, 72, 30>(bytes)),
+                Some(get_bits::<u8, 102, 2>(bytes)),
             )
         } else {
             (None, None)
@@ -38,8 +38,8 @@ impl From<&[u8]> for BinaryAcknowledge {
 
         let (mmsi3, mmsiseq3) = if payload_bits > 135 {
             (
-                Some(get_bits_u32::<104, 30>(bytes)),
-                Some(get_bits_u8::<134, 2>(bytes)),
+                Some(get_bits::<u32, 104, 30>(bytes)),
+                Some(get_bits::<u8, 134, 2>(bytes)),
             )
         } else {
             (None, None)
@@ -47,8 +47,8 @@ impl From<&[u8]> for BinaryAcknowledge {
 
         let (mmsi4, mmsiseq4) = if payload_bits > 167 {
             (
-                Some(get_bits_u32::<136, 30>(bytes)),
-                Some(get_bits_u8::<166, 2>(bytes)),
+                Some(get_bits::<u32, 136, 30>(bytes)),
+                Some(get_bits::<u8, 166, 2>(bytes)),
             )
         } else {
             (None, None)

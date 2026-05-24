@@ -1,4 +1,4 @@
-use crate::messages::utils::{AisStr, decode_text_dynamic, get_bit, get_bits_u8, get_bits_u32};
+use crate::messages::utils::{AisStr, decode_text_dynamic, get_bit, get_bits};
 
 #[derive(Debug)]
 pub struct AddressedSafetyMessage {
@@ -13,11 +13,11 @@ pub struct AddressedSafetyMessage {
 
 impl From<&[u8]> for AddressedSafetyMessage {
     fn from(bytes: &[u8]) -> Self {
-        let message_type = get_bits_u8::<0, 6>(bytes);
-        let repeat_indicator = get_bits_u8::<6, 2>(bytes);
-        let mmsi = get_bits_u32::<8, 30>(bytes);
-        let seqno = get_bits_u8::<38, 2>(bytes);
-        let dest_mmsi = get_bits_u32::<40, 30>(bytes);
+        let message_type = get_bits::<u8, 0, 6>(bytes);
+        let repeat_indicator = get_bits::<u8, 6, 2>(bytes);
+        let mmsi = get_bits::<u32, 8, 30>(bytes);
+        let seqno = get_bits::<u8, 38, 2>(bytes);
+        let dest_mmsi = get_bits::<u32, 40, 30>(bytes);
         let retransmit = get_bit::<70>(bytes);
 
         let payload_bits = bytes.len().saturating_sub(7) * 8;
