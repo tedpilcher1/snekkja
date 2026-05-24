@@ -1,0 +1,32 @@
+---
+source: tests/messages.rs
+expression: "parse(b\"!AIVDM,1,1,,A,F1mg=5B2N2P05o1t>0723g420000,0*79\")"
+---
+ChannelManagement(
+    ChannelManagement {
+        message_type: 22,
+        repeat_indicator: 0,
+        mmsi: 123456789,
+        channel_a: 2087,
+        channel_b: 2088,
+        txrx: 0,
+        power: false,
+        target: Geographic {
+            ne_lon: Some(
+                5.0,
+            ),
+            ne_lat: Some(
+                53.0,
+            ),
+            sw_lon: Some(
+                3.0,
+            ),
+            sw_lat: Some(
+                51.0,
+            ),
+        },
+        band_a: false,
+        band_b: false,
+        zonesize: 4,
+    },
+)

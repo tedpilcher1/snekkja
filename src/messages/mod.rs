@@ -2,11 +2,11 @@ use crate::messages::{
     addressed_safety_message::AddressedSafetyMessage,
     aid_to_navigation_report::AidToNavigationReport,
     assignment_mode_command::AssignmentModeCommand, base_station_report::BaseStationReport,
-    binary_acknowledge::BinaryAcknowledge, class_b_position_report::ClassBPositionReport,
-    class_b_static_data::ClassBStaticData, data_link_management::DataLinkManagement,
-    interrogation::Interrogation, position_report::PositionReport,
-    sar_aircraft_position_report::SarAircraftPositionReport, static_voyage_data::StaticVoyageData,
-    utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
+    binary_acknowledge::BinaryAcknowledge, channel_management::ChannelManagement,
+    class_b_position_report::ClassBPositionReport, class_b_static_data::ClassBStaticData,
+    data_link_management::DataLinkManagement, interrogation::Interrogation,
+    position_report::PositionReport, sar_aircraft_position_report::SarAircraftPositionReport,
+    static_voyage_data::StaticVoyageData, utc_date_inquiry::UtcDateInquiry, utils::get_bits_u8,
 };
 
 pub mod addressed_safety_message;
@@ -14,6 +14,7 @@ pub mod aid_to_navigation_report;
 pub mod assignment_mode_command;
 pub mod base_station_report;
 pub mod binary_acknowledge;
+pub mod channel_management;
 pub mod class_b_position_report;
 pub mod class_b_static_data;
 pub mod data_link_management;
@@ -45,6 +46,7 @@ pub enum AisMessage {
     Interrogation(Interrogation),
     DataLinkManagement(DataLinkManagement),
     AssignmentModeCommand(AssignmentModeCommand),
+    ChannelManagement(ChannelManagement),
 }
 
 impl AisMessage {
@@ -91,6 +93,9 @@ impl AisMessage {
             21 => Some(AisMessage::AidToNavigationReport(
                 AidToNavigationReport::from(bytes),
             )),
+            22 => Some(AisMessage::ChannelManagement(ChannelManagement::from(
+                bytes,
+            ))),
             24 => Some(AisMessage::ClassBStaticData(ClassBStaticData::from(bytes))),
             _ => None,
         };
