@@ -1,8 +1,4 @@
-// Hash function for the TalkerId lookup tables.
-// We use bytes[0] + bytes[1]*2 (mod 256) rather than XOR because XOR is
-// commutative — 'A'^'S' == 'S'^'A' — so AS and SA would always collide.
-// This non-commutative form keeps all 10 known talker IDs collision-free
-// with a single multiply and add rather than phf's SipHash overhead.
+// non-commutative to avoid collisions
 const fn talker_hash(a: u8, b: u8) -> usize {
     a.wrapping_add(b.wrapping_mul(2)) as usize
 }
@@ -22,8 +18,6 @@ static TALKER_VALUES: [TalkerId; 256] = {
     t
 };
 
-// Parallel key table: stores the packed u16 of the expected input at each
-// hash slot so we can reject inputs that hash to a valid slot by accident.
 static TALKER_KEYS: [u16; 256] = {
     let mut t = [0u16; 256];
     t[talker_hash(b'A', b'B')] = u16::from_ne_bytes(*b"AB");

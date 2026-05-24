@@ -45,7 +45,7 @@ pub fn decode_text_fixed<const N: usize>(
 #[inline(always)]
 fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
     // Safety: as_slice() guarantees 7 zero bytes past the payload, so any
-    // byte_start < self.len has a full 8 bytes available to read.
+    // byte_start < self.len has a full 8 bytes available to read
     let val =
         unsafe { (bytes.as_ptr().add(const { START / 8 }) as *const u64).read_unaligned() }.to_be();
 
@@ -53,10 +53,10 @@ fn get_bits<const START: usize, const LEN: usize>(bytes: &[u8]) -> u64 {
 }
 
 /// Reads up to `max_chars` six-bit AIS characters starting at `start_bit`, stopping early at the
-/// first zero value (which encodes '@', forbidden in name extensions by the spec)
+/// first zero value (which encodes '@', forbidden by spec)
 ///
 /// Fill bits past the payload are already zeroed by the unarmorer, so this terminates cleanly
-/// without needing the original fill-bits count.
+/// without needing the original fill-bits count
 pub fn decode_text_dynamic<const N: usize>(
     bytes: &[u8],
     start_bit: usize,
