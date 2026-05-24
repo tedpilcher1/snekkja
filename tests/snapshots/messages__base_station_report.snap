@@ -1,6 +1,6 @@
 ---
 source: tests/messages.rs
-expression: msg
+expression: "parse(b\"!AIVDM,1,1,,A,402=H21iv8GaDM9K9IW2t6000000,0*4B\")"
 ---
 BaseStationReport(
     BaseStationReport {

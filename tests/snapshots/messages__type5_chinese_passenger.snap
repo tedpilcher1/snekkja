@@ -1,6 +1,6 @@
 ---
 source: tests/messages.rs
-expression: result
+expression: "parse(b\"!AIVDM,1,1,,A,56:fS:D0000222222208v0<QD4r0`T4v3622220t0`D147?ps1`88888888888888888880,0*03\")"
 ---
 StaticVoyageData(
     StaticVoyageData {
