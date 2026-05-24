@@ -8,7 +8,8 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use snekkja::Parser;
 
 fn load_samples() -> Vec<String> {
-    let file = File::open("samples.txt").unwrap();
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples.txt");
+    let file = File::open(path).unwrap();
     let rdr = BufReader::new(file);
 
     let mut lines: Vec<String> = Vec::new();

@@ -3,9 +3,6 @@ name = "snekkja"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
-criterion = "0.8.2"
-
 [dev-dependencies]
 insta = "1"
 
@@ -23,6 +20,5 @@ codegen-units = 1
 debug-assertions = false
 split-debuginfo = "off"
 
-[[bench]]
-name = "bench"
-harness = false
+[workspace]
+members = ["benchmarks"]

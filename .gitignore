@@ -1,6 +1,5 @@
 /target
 .DS_Store
-samples.txt
 .claude
 /src/bin
 /scripts
