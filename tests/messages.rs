@@ -1,12 +1,11 @@
-use snekkja::{AisMessage, Parser};
+use snekkja::{AisFragments, AisMessage, Parser};
 
 fn parse(sentence: &[u8]) -> AisMessage {
     let mut parser = Parser::default();
-    parser
-        .parse(sentence)
-        .expect("parse failed")
-        .message
-        .expect("no message")
+    match parser.parse(sentence).expect("parse failed") {
+        AisFragments::Complete { message, .. } => message.expect("no message"),
+        AisFragments::Incomplete(_) => panic!("unexpected incomplete fragment"),
+    }
 }
 
 // --- Type 1 ---

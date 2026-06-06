@@ -1,151 +1,95 @@
 use crate::{
-    AisReportType, AisSentence, RadioChannel, TalkerId,
-    checksum::valid_checksum,
+    AisFragments, SentenceHeader,
     errors::{MalformedReason, ParseError},
+    fragments::Fragments,
     messages::{AisMessage, Unarmored},
 };
 
 #[derive(Debug, Default)]
 pub struct Parser {
     unarmored_buf: Unarmored,
+    fragments: Fragments,
 }
 
 impl Parser {
-    pub fn parse(&mut self, sentence: &[u8]) -> Result<AisSentence, ParseError> {
-        let sentence = sentence.strip_prefix(b"!").unwrap_or(sentence);
-
-        if sentence.len() < 15 {
-            return Err(ParseError::Malformed(MalformedReason::SentenceTooShort));
-        }
-
-        let star_pos = sentence.len() - 3;
-
-        if sentence[star_pos] != b'*' {
-            return Err(ParseError::Malformed(
-                MalformedReason::MissingChecksumDelimiter,
-            ));
-        }
-
-        let hi = sentence
-            .get(star_pos + 1)
-            .copied()
-            .ok_or(ParseError::Malformed(MalformedReason::SentenceTooShort))?;
-
-        let lo = sentence
-            .get(star_pos + 2)
-            .copied()
-            .ok_or(ParseError::Malformed(MalformedReason::SentenceTooShort))?;
-
-        let expected_checksum = parse_hex_byte(hi, lo)?;
-
-        let sentence = &sentence[..star_pos];
-
-        if !unsafe { valid_checksum(sentence, expected_checksum) } {
-            return Err(ParseError::InvalidChecksum);
-        }
-
-        // bytes 0 & 1 = TalkerId
-        let talker_id = TalkerId::from(
-            <&[u8; 2]>::try_from(&sentence[0..2])
-                .map_err(|_| ParseError::Malformed(MalformedReason::SentenceTooShort))?,
-        );
-
-        // bytes 2,3,4 = Ais report type
-        let ais_report_type = AisReportType::from(
-            <&[u8; 3]>::try_from(&sentence[2..5])
-                .map_err(|_| ParseError::Malformed(MalformedReason::SentenceTooShort))?,
-        );
-
-        // byte 6 = number of fragments
-        let num_fragments = numeric_from_ascii(sentence[6]);
-
-        // byte 8 = fragment number
-        let fragment_num = numeric_from_ascii(sentence[8]);
-
-        let (message_id, radio_channel, start_ais_message) = if num_fragments > 1 {
-            if sentence.len() < 13 {
-                return Err(ParseError::Malformed(MalformedReason::SentenceTooShort));
-            }
-
-            // byte 10 = message_id
-            let message_id = numeric_from_ascii(sentence[10]);
-
-            // byte 12 = radio channel
-            let radio_channel = if sentence[12] == b',' {
-                None
-            } else {
-                Some(RadioChannel::from(sentence[12]))
-            };
-
-            (Some(message_id), radio_channel, 14)
-        } else {
-            // byte 11 = radio channel
-            let (radio_channel, start_ais_message) = if sentence[11] == b',' {
-                (None, 12)
-            } else {
-                (Some(RadioChannel::from(sentence[11])), 13)
-            };
-
-            (None, radio_channel, start_ais_message)
-        };
-
-        let fill_bits = sentence
-            .last()
-            .copied()
-            .map(numeric_from_ascii)
-            .ok_or(ParseError::Malformed(MalformedReason::SentenceTooShort))?;
-
-        let (message_type, message) = AisMessage::parse(
-            &mut self.unarmored_buf,
-            &sentence[start_ais_message..sentence.len() - 2],
-            usize::from(fill_bits),
-        );
-
-        Ok(AisSentence {
-            talker_id,
-            ais_report_type,
-            num_fragments,
-            fragment_num,
-            message_id,
-            radio_channel,
-            fill_bits,
-            message_type,
-            message,
+    /// Returns `None` while fragments are still being buffered, and `Some`
+    /// once the message is fully assembled and decoded.
+    pub fn parse_message(&mut self, sentence: &[u8]) -> Result<Option<AisMessage>, ParseError> {
+        Ok(match self.parse(sentence)? {
+            AisFragments::Complete { message, .. } => message,
+            AisFragments::Incomplete(_) => None,
         })
     }
-}
 
-#[inline(always)]
-fn numeric_from_ascii(char: u8) -> u8 {
-    let mut numeric = char - 48;
+    /// Parse one NMEA sentence, buffering fragments until all parts of a
+    /// multi-sentence message have arrived.
+    pub fn parse(&mut self, sentence: &[u8]) -> Result<AisFragments, ParseError> {
+        let raw = Self::parse_nmea_header(sentence)?;
 
-    if numeric > 40 {
-        numeric -= 8
-    }
+        if raw.num_fragments == 1 {
+            return Ok(AisFragments::Complete {
+                header: SentenceHeader {
+                    talker_id: raw.talker_id,
+                    ais_report_type: raw.ais_report_type,
+                    num_fragments: 1,
+                    fragment_num: 1,
+                    message_id: None,
+                    radio_channel: raw.radio_channel,
+                    fill_bits: raw.fill_bits,
+                },
+                message: AisMessage::parse(
+                    &mut self.unarmored_buf,
+                    raw.armored,
+                    usize::from(raw.fill_bits),
+                ),
+            });
+        }
 
-    numeric
-}
+        let message_id = raw.message_id.ok_or(ParseError::Malformed(
+            MalformedReason::MissingFragmentMessageId,
+        ))?;
 
-#[inline(always)]
-fn parse_hex_byte(hi: u8, lo: u8) -> Result<u8, ParseError> {
-    fn nibble(b: u8) -> Option<u8> {
-        match b {
-            b'0'..=b'9' => Some(b - b'0'),
-            b'A'..=b'F' => Some(b - b'A' + 10),
-            b'a'..=b'f' => Some(b - b'a' + 10),
-            _ => None,
+        match self.fragments.insert(
+            message_id,
+            raw.fragment_num,
+            raw.num_fragments,
+            raw.armored,
+            raw.fill_bits,
+        )? {
+            Some(payload) => Ok(AisFragments::Complete {
+                header: SentenceHeader {
+                    talker_id: raw.talker_id,
+                    ais_report_type: raw.ais_report_type,
+                    num_fragments: payload.num_fragments,
+                    fragment_num: payload.num_fragments,
+                    message_id: Some(message_id),
+                    radio_channel: raw.radio_channel,
+                    fill_bits: payload.fill_bits,
+                },
+                message: AisMessage::parse(
+                    &mut self.unarmored_buf,
+                    &payload.data[..payload.len],
+                    usize::from(payload.fill_bits),
+                ),
+            }),
+
+            None => Ok(AisFragments::Incomplete(SentenceHeader {
+                talker_id: raw.talker_id,
+                ais_report_type: raw.ais_report_type,
+                num_fragments: raw.num_fragments,
+                fragment_num: raw.fragment_num,
+                message_id: Some(message_id),
+                radio_channel: raw.radio_channel,
+                fill_bits: raw.fill_bits,
+            })),
         }
     }
-
-    let hi = nibble(hi).ok_or(ParseError::Malformed(MalformedReason::InvalidHexDigit))?;
-    let lo = nibble(lo).ok_or(ParseError::Malformed(MalformedReason::InvalidHexDigit))?;
-
-    Ok(hi << 4 | lo)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{AisReportType, RadioChannel, TalkerId};
 
     fn make_packet(body: &[u8]) -> Vec<u8> {
         let checksum = body.iter().fold(0u8, |acc, &b| acc ^ b);
@@ -155,63 +99,150 @@ mod tests {
         packet
     }
 
+    fn type5_frag1() -> Vec<u8> {
+        make_packet(b"AIVDM,2,1,3,B,55?MbV02>H9c<H4eN10Ep4pT4@Dn2222220l1@O4i4i0Cm0CSlmD`880000,0")
+    }
+    fn type5_frag2() -> Vec<u8> {
+        make_packet(b"AIVDM,2,2,3,B,00000000000,2")
+    }
+
     #[test]
     fn parses_single_fragment() {
         let mut parser = Parser::default();
         let packet = b"!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C";
-        let s = parser.parse(packet).unwrap();
-
-        assert!(matches!(s.talker_id, TalkerId::AI));
-        assert!(matches!(s.ais_report_type, AisReportType::VDM));
-        assert_eq!(s.num_fragments, 1);
-        assert_eq!(s.fragment_num, 1);
-        assert!(s.message_id.is_none());
-        assert!(matches!(s.radio_channel, Some(RadioChannel::B)));
-        assert_eq!(s.fill_bits, 0);
+        let header = match parser.parse(packet).unwrap() {
+            AisFragments::Complete { header, .. } => header,
+            AisFragments::Incomplete(_) => panic!("expected Complete"),
+        };
+        assert!(matches!(header.talker_id, TalkerId::AI));
+        assert!(matches!(header.ais_report_type, AisReportType::VDM));
+        assert_eq!(header.num_fragments, 1);
+        assert_eq!(header.fragment_num, 1);
+        assert!(header.message_id.is_none());
+        assert!(matches!(header.radio_channel, Some(RadioChannel::B)));
+        assert_eq!(header.fill_bits, 0);
     }
 
     #[test]
     fn parses_without_leading_bang() {
         let mut parser = Parser::default();
-        let result =
-            parser.parse(b"AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*01");
-        assert!(result.is_ok());
+        assert!(
+            parser
+                .parse(b"AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*01")
+                .is_ok()
+        );
     }
 
     #[test]
-    fn parses_multi_fragment() {
+    fn multi_fragment_buffers_then_completes() {
         let mut parser = Parser::default();
-        let packet = make_packet(b"AIVDM,2,1,3,B,0000000,0");
-        let s = parser.parse(&packet).unwrap();
 
-        assert_eq!(s.num_fragments, 2);
-        assert_eq!(s.fragment_num, 1);
-        assert_eq!(s.message_id, Some(3));
-        assert!(matches!(s.radio_channel, Some(RadioChannel::B)));
+        assert!(matches!(
+            parser.parse(&type5_frag1()).unwrap(),
+            AisFragments::Incomplete(_)
+        ));
+
+        match parser.parse(&type5_frag2()).unwrap() {
+            AisFragments::Complete { header, message } => {
+                assert_eq!(header.num_fragments, 2);
+                assert_eq!(header.message_id, Some(3));
+                assert!(matches!(message, Some(AisMessage::StaticVoyageData(_))));
+            }
+            AisFragments::Incomplete(_) => panic!("expected Complete"),
+        };
+    }
+
+    #[test]
+    fn multi_fragment_out_of_order() {
+        let mut parser = Parser::default();
+        assert!(matches!(
+            parser.parse(&type5_frag2()).unwrap(),
+            AisFragments::Incomplete(_)
+        ));
+
+        match parser.parse(&type5_frag1()).unwrap() {
+            AisFragments::Complete { message, .. } => {
+                assert!(matches!(message, Some(AisMessage::StaticVoyageData(_))))
+            }
+            AisFragments::Incomplete(_) => panic!("expected Complete"),
+        }
+    }
+
+    #[test]
+    fn slot_reset_on_conflicting_num_fragments() {
+        let mut parser = Parser::default();
+        parser
+            .parse(&make_packet(b"AIVDM,3,1,1,A,0000000,0"))
+            .unwrap();
+        match parser
+            .parse(&make_packet(b"AIVDM,2,1,1,A,0000000,0"))
+            .unwrap()
+        {
+            AisFragments::Incomplete(s) => assert_eq!(s.num_fragments, 2),
+            AisFragments::Complete { .. } => panic!("expected Incomplete after reset"),
+        }
+    }
+
+    #[test]
+    fn slot_reset_on_duplicate_fragment_num() {
+        let mut parser = Parser::default();
+        parser
+            .parse(&make_packet(b"AIVDM,2,1,1,A,0000000,0"))
+            .unwrap();
+        assert!(matches!(
+            parser
+                .parse(&make_packet(b"AIVDM,2,1,1,A,0000000,0"))
+                .unwrap(),
+            AisFragments::Incomplete(_)
+        ));
+    }
+
+    #[test]
+    fn independent_message_ids_do_not_interfere() {
+        let mut parser = Parser::default();
+        parser
+            .parse(&make_packet(b"AIVDM,2,1,1,A,0000000,0"))
+            .unwrap();
+        parser
+            .parse(&make_packet(b"AIVDM,2,1,2,A,0000000,0"))
+            .unwrap();
+        assert!(matches!(
+            parser
+                .parse(&make_packet(b"AIVDM,2,2,1,A,0000000,0"))
+                .unwrap(),
+            AisFragments::Complete { .. }
+        ));
+        assert!(matches!(
+            parser
+                .parse(&make_packet(b"AIVDM,2,2,2,A,0000000,0"))
+                .unwrap(),
+            AisFragments::Complete { .. }
+        ));
+    }
+
+    #[test]
+    fn parse_message_returns_none_while_buffering() {
+        let mut parser = Parser::default();
+        assert!(parser.parse_message(&type5_frag1()).unwrap().is_none());
+        assert!(parser.parse_message(&type5_frag2()).unwrap().is_some());
     }
 
     #[test]
     fn error_too_short() {
         let mut parser = Parser::default();
         for input in [b"".as_ref(), b"*01", b"AIVDM*01"] {
-            let result = parser.parse(input);
-            assert!(
-                matches!(
-                    result,
-                    Err(ParseError::Malformed(MalformedReason::SentenceTooShort))
-                ),
-                "expected SentenceTooShort for input {:?}",
-                input
-            );
+            assert!(matches!(
+                parser.parse(input),
+                Err(ParseError::Malformed(MalformedReason::SentenceTooShort))
+            ));
         }
     }
 
     #[test]
     fn error_missing_checksum_delimiter() {
         let mut parser = Parser::default();
-        let result = parser.parse(b"!AIVDM,1,1,,B,data,0");
         assert!(matches!(
-            result,
+            parser.parse(b"!AIVDM,1,1,,B,data,0"),
             Err(ParseError::Malformed(
                 MalformedReason::MissingChecksumDelimiter
             ))
@@ -221,9 +252,8 @@ mod tests {
     #[test]
     fn error_truncated_checksum() {
         let mut parser = Parser::default();
-        let result = parser.parse(b"!AIVDM,1,1,,B,data,0*");
         assert!(matches!(
-            result,
+            parser.parse(b"!AIVDM,1,1,,B,data,0*"),
             Err(ParseError::Malformed(
                 MalformedReason::MissingChecksumDelimiter
             ))
@@ -233,9 +263,8 @@ mod tests {
     #[test]
     fn error_invalid_hex_digit() {
         let mut parser = Parser::default();
-        let result = parser.parse(b"!AIVDM,1,1,,B,data,0*GG");
         assert!(matches!(
-            result,
+            parser.parse(b"!AIVDM,1,1,,B,data,0*GG"),
             Err(ParseError::Malformed(MalformedReason::InvalidHexDigit))
         ));
     }
@@ -243,18 +272,17 @@ mod tests {
     #[test]
     fn error_checksum_mismatch() {
         let mut parser = Parser::default();
-        let result =
-            parser.parse(b"!AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*FF");
-        assert!(matches!(result, Err(ParseError::InvalidChecksum)));
+        assert!(matches!(
+            parser.parse(b"!AIVDM,1,1,,B,E>kb9O9aS@7PUh10dh19@;0Tah2cWrfP:l?M`00003vP100,0*FF"),
+            Err(ParseError::InvalidChecksum)
+        ));
     }
 
     #[test]
     fn error_sentence_too_short() {
         let mut parser = Parser::default();
-        let packet = make_packet(b"AIVDM,1,1,");
-        let result = parser.parse(&packet);
         assert!(matches!(
-            result,
+            parser.parse(&make_packet(b"AIVDM,1,1,")),
             Err(ParseError::Malformed(MalformedReason::SentenceTooShort))
         ));
     }
@@ -262,24 +290,39 @@ mod tests {
     #[test]
     fn unknown_talker_id_produces_variant() {
         let mut parser = Parser::default();
-        let packet = make_packet(b"XXVDM,1,1,,B,0000000,0");
-        let s = parser.parse(&packet).unwrap();
-        assert!(matches!(s.talker_id, TalkerId::Unknown));
+        let header = match parser
+            .parse(&make_packet(b"XXVDM,1,1,,B,0000000,0"))
+            .unwrap()
+        {
+            AisFragments::Complete { header, .. } => header,
+            _ => panic!(),
+        };
+        assert!(matches!(header.talker_id, TalkerId::Unknown));
     }
 
     #[test]
     fn unknown_report_type_produces_variant() {
         let mut parser = Parser::default();
-        let packet = make_packet(b"AIZAP,1,1,,B,0000000,0");
-        let s = parser.parse(&packet).unwrap();
-        assert!(matches!(s.ais_report_type, AisReportType::Unknown));
+        let header = match parser
+            .parse(&make_packet(b"AIZAP,1,1,,B,0000000,0"))
+            .unwrap()
+        {
+            AisFragments::Complete { header, .. } => header,
+            _ => panic!(),
+        };
+        assert!(matches!(header.ais_report_type, AisReportType::Unknown));
     }
 
     #[test]
     fn unknown_radio_channel_produces_variant() {
         let mut parser = Parser::default();
-        let packet = make_packet(b"AIVDM,1,1,,Z,0000000,0");
-        let s = parser.parse(&packet).unwrap();
-        assert!(matches!(s.radio_channel, Some(RadioChannel::Unknown)));
+        let header = match parser
+            .parse(&make_packet(b"AIVDM,1,1,,Z,0000000,0"))
+            .unwrap()
+        {
+            AisFragments::Complete { header, .. } => header,
+            _ => panic!(),
+        };
+        assert!(matches!(header.radio_channel, Some(RadioChannel::Unknown)));
     }
 }

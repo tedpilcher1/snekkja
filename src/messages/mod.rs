@@ -27,7 +27,7 @@ pub mod class_b_position_report;
 pub mod class_b_static_data;
 pub mod data_link_management;
 pub mod extended_class_b_position_report;
-mod fields;
+pub(crate) mod fields;
 pub mod group_assignment_command;
 pub mod interrogation;
 pub mod long_range_position_report;
@@ -75,7 +75,7 @@ impl AisMessage {
         unarmored_buf: &mut Unarmored,
         bytes: &[u8],
         fill_bits: usize,
-    ) -> (AisMessageType, Option<Self>) {
+    ) -> Option<Self> {
         unsafe {
             unarmored_buf.unarmor(bytes, fill_bits);
         }
@@ -84,7 +84,7 @@ impl AisMessage {
 
         let message_type = AisMessageType::from(get_bits::<u8, 0, 6>(bytes));
 
-        let message = match message_type {
+        match message_type {
             1..=3 => Some(AisMessage::PositionReport(PositionReport::from(bytes))),
             4 | 11 => Some(AisMessage::BaseStationReport(BaseStationReport::from(
                 bytes,
@@ -139,8 +139,6 @@ impl AisMessage {
                 LongRangePositionReport::from(bytes),
             )),
             _ => None,
-        };
-
-        (message_type, message)
+        }
     }
 }

@@ -1,21 +1,47 @@
 pub(crate) mod checksum;
 pub mod errors;
+mod fragments;
+mod header;
 mod messages;
 mod parser;
 mod types;
 
+pub use errors::{MalformedReason, ParseError};
 pub use messages::AisMessage;
+pub use messages::fields::{
+    epfd_fix_type::EpfdFixType,
+    maneuver_indicator::ManeuverIndicator,
+    navaid_type::NavaidType,
+    navigation_status::NavigationStatus,
+    position_accuracy::PositionAccuracy,
+    radio_status::{ItdmaMessage, RadioStatus, SotdmaMessage, SubMessage, SyncState},
+    rate_of_turn::RateOfTurn,
+    ship_type::ShipType,
+};
 pub use messages::{
+    addressed_safety_message::AddressedSafetyMessage,
     aid_to_navigation_report::AidToNavigationReport,
-    aid_to_navigation_report::NavaidType,
+    assignment_mode_command::AssignmentModeCommand,
     base_station_report::BaseStationReport,
     binary_acknowledge::BinaryAcknowledge,
+    binary_addressed_message::BinaryAddressedMessage,
+    binary_broadcast_message::BinaryBroadcastMessage,
+    channel_management::{ChannelManagement, ChannelManagementTarget},
     class_b_position_report::ClassBPositionReport,
     class_b_static_data::{
         ClassBStaticData, ClassBStaticDataPartA, ClassBStaticDataPartB, Dimensions,
     },
+    data_link_management::DataLinkManagement,
+    extended_class_b_position_report::ExtendedClassBPositionReport,
+    group_assignment_command::GroupAssignmentCommand,
+    interrogation::Interrogation,
+    long_range_position_report::LongRangePositionReport,
     position_report::PositionReport,
+    safety_broadcast_message::SafetyBroadcastMessage,
+    sar_aircraft_position_report::SarAircraftPositionReport,
+    single_slot_binary_message::SingleSlotBinaryMessage,
     static_voyage_data::StaticVoyageData,
+    utc_date_inquiry::UtcDateInquiry,
 };
 pub use parser::Parser;
 pub use types::{AisReportType, RadioChannel, TalkerId};
@@ -38,7 +64,7 @@ const TAIL_EXTRACT: [[u8; 16]; 16] = {
 };
 
 #[derive(Debug)]
-pub struct AisSentence {
+pub struct SentenceHeader {
     pub talker_id: TalkerId,
     pub ais_report_type: AisReportType,
     pub num_fragments: u8,
@@ -46,6 +72,13 @@ pub struct AisSentence {
     pub message_id: Option<u8>,
     pub radio_channel: Option<RadioChannel>,
     pub fill_bits: u8,
-    pub message_type: u8,
-    pub message: Option<AisMessage>,
+}
+
+#[derive(Debug)]
+pub enum AisFragments {
+    Complete {
+        header: SentenceHeader,
+        message: Option<AisMessage>,
+    },
+    Incomplete(SentenceHeader),
 }
